@@ -1,0 +1,3581 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Fikrim Var</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    /* ============================================================
+       FIBABANKA DESIGN SYSTEM — matched to Talep Olgunluk Kontrolü
+       ============================================================ */
+    :root {
+      --primary:      #2F5DA9;
+      --primary-dark: #0043A6;
+      --primary-light:#4C9AFF;
+      --success:      #36B37E;
+      --success-dark: #2F9E6B;
+      --danger:       #DE350B;
+      --bg:           #F4F5F7;
+      --surface:      #ffffff;
+      --border:       #DFE1E6;
+      --border-light: #EBECF0;
+      --text:         #172B4D;
+      --text-muted:   #42526E;
+      --text-subtle:  #6B778C;
+      --text-disabled:#7A869A;
+      --sidebar-bg:   #EAECEF;
+      --sidebar-text: #172B4D;
+      --sidebar-hover:rgba(0,0,0,0.05);
+      --sidebar-active:rgba(47,93,169,0.1);
+      --input-bg:     #ffffff;
+      --focus-ring:   rgba(76,154,255,0.2);
+      --shadow-sm:    0 1px 3px rgba(0,0,0,0.10);
+      --shadow-md:    0 4px 8px rgba(0,0,0,0.10);
+      --shadow-lg:    0 8px 16px rgba(9,30,66,0.15);
+      --radius:       4px;
+      --radius-md:    6px;
+      --radius-lg:    8px;
+      --user-bubble:  #EBF2FF;
+      --assistant-bubble: #F4F5F7;
+      --accent:       rgba(47,93,169,.25);
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%; font-size:14px;}
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      overflow:hidden;
+    }
+
+    .app{display:flex;height:100%}
+
+    /* ===== Sidebar ===== */
+    .sidebar{
+      width:260px;
+      background:var(--sidebar-bg);
+      display:flex;
+      flex-direction:column;
+      padding:0;
+      gap:0;
+      overflow:hidden;
+      flex-shrink:0;
+      position:relative;
+    }
+    /* Border sadece header altından başlar, mavi alanda görünmez */
+    .sidebar::after{
+      content:'';
+      position:absolute;
+      top:65px;
+      right:0;
+      bottom:0;
+      width:1px;
+      background:var(--border);
+      pointer-events:none;
+    }
+
+    .sb-top{
+      display:flex;
+      align-items:center;
+      padding:0 12px;
+      height:65px;
+      background:var(--primary);
+      border-bottom:1px solid var(--primary-dark);
+      gap:8px;
+    }
+
+    .sb-brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex:1;
+    }
+    .sb-brand strong{
+      font-size:15px;
+      font-weight:700;
+      color:#ffffff;
+      letter-spacing:0.2px;
+    }
+
+    .sb-btn{
+      width:34px;height:34px;
+      border-radius:var(--radius);
+      border:1px solid rgba(255,255,255,0.3);
+      background:transparent;
+      display:grid;place-items:center;
+      cursor:pointer;
+      color:rgba(255,255,255,0.85);
+      flex-shrink:0;
+      transition:background .15s, border-color .15s;
+    }
+    .sb-btn:hover{
+      background:rgba(255,255,255,0.15);
+      border-color:rgba(255,255,255,0.5);
+      color:#fff;
+    }
+
+    .sb-new-btn{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      height:34px;
+      padding:0 12px;
+      border-radius:var(--radius);
+      border:1px solid rgba(255,255,255,0.3);
+      background:rgba(255,255,255,0.12);
+      color:rgba(255,255,255,0.95);
+      cursor:pointer;
+      font-size:13px;
+      font-weight:600;
+      transition:background .15s, border-color .15s;
+    }
+    .sb-new-btn:hover{
+      background:rgba(255,255,255,0.22);
+      border-color:rgba(255,255,255,0.5);
+    }
+    .sb-new-btn svg{ flex-shrink:0; }
+
+    .conversation-list{
+      flex:1;
+      overflow-y:auto;
+      padding:8px;
+    }
+    .conversation-list::-webkit-scrollbar{width:6px;}
+    .conversation-list::-webkit-scrollbar-thumb{
+      background:rgba(0,0,0,0.15);
+      border-radius:999px;
+    }
+
+    .conv-group{margin-top:8px;}
+    .conv-group-title{
+      font-size:11px;
+      color:var(--text-subtle);
+      padding:4px 8px;
+      font-weight:600;
+      text-transform:uppercase;
+      letter-spacing:0.6px;
+    }
+
+    .conv-item{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:9px 10px;
+      border-radius:var(--radius);
+      border:1px solid transparent;
+      cursor:pointer;
+      position:relative;
+      transition:background .12s;
+    }
+    .conv-item:hover{background:var(--sidebar-hover)}
+    .conv-item.active{
+      background:var(--sidebar-active);
+      border-color:rgba(47,93,169,0.25);
+    }
+
+    .conv-title{
+      flex:1;
+      font-size:13px;
+      color:var(--text-muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .conv-item.active .conv-title{ color:var(--primary); font-weight:600; }
+
+    .conv-more{
+      opacity:0;
+      pointer-events:none;
+      width:26px;height:26px;
+      border-radius:var(--radius);
+      border:1px solid transparent;
+      background:transparent;
+      cursor:pointer;
+      display:grid;place-items:center;
+      color:var(--text-subtle);
+      font-size:16px;
+      line-height:1;
+      transition:opacity .12s;
+    }
+    .conv-item:hover .conv-more{opacity:1; pointer-events:auto;}
+    .conv-more:hover{
+      background:var(--border-light);
+      border-color:var(--border);
+      color:var(--text);
+    }
+
+    .sb-bottom{
+      padding:12px;
+      border-top:1px solid var(--border);
+      margin-top:auto;
+    }
+    .sb-user{
+      display:flex; align-items:center; gap:10px;
+      padding:8px 10px; border-radius:var(--radius);
+      cursor:default;
+    }
+    .sb-user:hover{ background:var(--sidebar-hover); }
+    .sb-user-avatar{
+      width:32px; height:32px; border-radius:50%;
+      background:var(--primary); color:#fff;
+      display:grid; place-items:center;
+      font-size:13px; font-weight:700; flex-shrink:0;
+      overflow:hidden;
+    }
+    .sb-user-avatar img{ width:100%; height:100%; object-fit:cover; border-radius:50%; }
+    .sb-user-info{ flex:1; min-width:0; }
+    .sb-user-name{
+      font-size:13px; font-weight:600; color:var(--text);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .sb-user-email{
+      font-size:11px; color:var(--text-subtle);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+
+    /* ===== Main ===== */
+    .main{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg);}
+
+    .header{
+      height:65px;
+      display:flex;align-items:center;
+      padding:0 30px;
+      background:var(--primary);
+      gap:12px;
+      box-shadow:0 2px 4px rgba(0,0,0,0.1);
+    }
+    .header-title{
+      font-size:18px;
+      font-weight:600;
+      color:#ffffff;
+    }
+    .header-right{margin-left:auto;display:flex;gap:8px;align-items:center;}
+
+    .tiny-btn{
+      height:34px;
+      padding:0 14px;
+      border-radius:var(--radius);
+      border:1px solid rgba(255,255,255,0.3);
+      background:rgba(255,255,255,0.1);
+      cursor:pointer;
+      color:rgba(255,255,255,0.95);
+      font-size:13px;
+      font-weight:600;
+      transition:background .15s, border-color .15s, color .15s;
+    }
+    .tiny-btn:hover{
+      background:rgba(255,255,255,0.2);
+      border-color:rgba(255,255,255,0.5);
+      color:#fff;
+    }
+    .tiny-btn.primary{
+      background:rgba(255,255,255,0.18);
+      color:#fff;
+      border-color:rgba(255,255,255,0.45);
+    }
+    .tiny-btn.primary:hover{
+      background:rgba(255,255,255,0.28);
+      border-color:rgba(255,255,255,0.6);
+    }
+
+    /* ===== Calls panel (right sidebar) ===== */
+    .calls-overlay{
+      position:fixed; inset:0;
+      background:rgba(9,30,66,0.54);
+      opacity:0; pointer-events:none;
+      transition:opacity .15s ease;
+      z-index:90;
+    }
+    .calls-panel{
+      position:fixed; top:0; right:-50%;
+      width:50%; height:100%;
+      background:var(--surface);
+      box-shadow:-10px 0 30px rgba(0,0,0,0.1);
+      transition:right .3s cubic-bezier(0.2,0,0,1);
+      z-index:100;
+      display:flex; flex-direction:column;
+    }
+    .calls-panel.open{right:0;}
+    .calls-overlay.open{opacity:1; pointer-events:auto}
+
+    .calls-head{
+      background:var(--primary);
+      color:white;
+      padding:15px 25px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      flex:0 0 auto;
+    }
+    .calls-head-title{ font-weight:700; font-size:16px; }
+    .calls-close{
+      cursor:pointer;
+      font-size:28px;
+      line-height:1;
+      color:#fff;
+      background:transparent;
+      border:none;
+      padding:0;
+      display:grid;place-items:center;
+      transition:opacity .15s;
+    }
+    .calls-close:hover{opacity:0.75;}
+    .calls-list{flex:1; overflow:auto; padding:12px;}
+    @media(max-width:1100px){ .calls-panel { width:90%; right:-90%; } }
+
+    .call-item{
+      border:1px solid var(--border);
+      border-radius:var(--radius-lg);
+      padding:12px 14px;
+      display:flex; flex-direction:column; gap:8px;
+      background:var(--surface);
+      margin-bottom:10px;
+      box-shadow:var(--shadow-sm);
+      transition:box-shadow .15s;
+    }
+    .call-item:hover{ box-shadow:var(--shadow-md); }
+
+    .call-row{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      justify-content:space-between;
+    }
+    .call-actions{ display:flex; gap:6px; align-items:center; }
+    .call-action{
+      height:28px;
+      padding:0 12px;
+      border-radius:var(--radius);
+      border:1px solid var(--primary);
+      background:var(--primary);
+      color:#fff;
+      font-size:12px;
+      font-weight:600;
+      cursor:pointer;
+      transition:background .15s;
+    }
+    .call-action:hover{ background:var(--primary-dark); border-color:var(--primary-dark); }
+
+    .call-title{font-size:13px; font-weight:600; color:var(--text);}
+    .call-meta{font-size:12px; color:var(--text-subtle); display:flex; gap:8px; align-items:center;}
+    .call-tag{
+      font-size:11px; padding:2px 8px; border-radius:3px;
+      background:#006644; color:#fff;
+      font-weight:700; text-transform:uppercase; letter-spacing:0.4px;
+    }
+    .call-tag.draft{background:#0052CC;}
+
+    /* ===== Chat area ===== */
+    .chat-wrap{
+      flex:1;
+      overflow-y:auto;
+      display:flex;
+      justify-content:center;
+      padding:8px 0;
+      background:#F7F8FA;
+      position:relative;
+    }
+    .chat-wrap::-webkit-scrollbar{width:6px;}
+    .chat-wrap::-webkit-scrollbar-thumb{
+      background:rgba(100,116,139,.18);
+      border-radius:999px;
+    }
+    .chat{
+      width:min(720px,100%);
+      padding:32px 24px 16px;
+      display:flex;flex-direction:column;gap:0;
+    }
+
+    /* Row layout — flex-start so avatar anchors to top of card */
+    .row{display:flex;gap:10px;margin-bottom:0;align-items:flex-start;}
+    .row.user{justify-content:flex-end;align-items:flex-end;}
+    .row.group-start{ margin-top:28px; }
+    .row.grouped{ margin-top:4px; }
+    .row.grouped .msg-avatar{ visibility:hidden; }
+
+    /* Entrance animation */
+    @keyframes msgIn{
+      from{ opacity:0; transform:translateY(6px); }
+      to{   opacity:1; transform:translateY(0); }
+    }
+    .row{ animation:msgIn .18s ease-out both; }
+
+    /* Bubbles */
+    .bubble{
+      padding:10px 16px;
+      border-radius:18px;
+      font-size:15px; line-height:1.65;
+      word-wrap:break-word;
+      position:relative;
+    }
+    /* User — right-aligned pill */
+    .bubble.user{
+      background:#E2E8F0;
+      color:#1E293B;
+      border-bottom-right-radius:6px;
+    }
+    /* Assistant — full-width soft card */
+    .bubble.assistant{
+      background:#EEF2FB;
+      color:#1E293B;
+      border-radius:12px;
+      padding:16px 20px;
+      border:1px solid #DDE6F5;
+      box-shadow:none;
+      width:100%;
+    }
+    .row.grouped .bubble.user{ border-top-right-radius:6px; }
+
+    /* Turn spacer between sender changes */
+    .turn-spacer{ height:28px; flex-shrink:0; }
+
+    /* ===== Example cards below assistant messages ===== */
+    .example-cards{
+      display:flex; flex-direction:column; gap:8px;
+      margin-top:14px;
+    }
+    .example-card{
+      padding:10px 14px 10px 16px;
+      border:1px solid #C7D8F5;
+      border-left:3px solid var(--primary);
+      border-radius:8px;
+      background:#F8FAFF;
+      font-size:13.5px; color:#334155;
+      line-height:1.6;
+      text-align:left;
+      font-family:inherit;
+      cursor:pointer;
+      transition:all .15s;
+      position:relative;
+    }
+    .example-card::before{
+      content:'\201C';
+      position:absolute; top:6px; left:5px;
+      font-size:18px; color:var(--primary); opacity:0.35;
+      line-height:1; font-family:Georgia,serif;
+    }
+    .example-card:hover{
+      background:#EEF2FB;
+      border-color:var(--primary);
+      border-left-color:var(--primary);
+      box-shadow:0 2px 8px rgba(47,93,169,0.12);
+    }
+    .example-cards-label{
+      font-size:11px; font-weight:700; color:var(--text-subtle);
+      text-transform:uppercase; letter-spacing:0.5px;
+      margin-bottom:4px;
+    }
+
+    /* ===== Markdown inside assistant card ===== */
+    .bubble.assistant p{ margin:0 0 10px; line-height:1.7; }
+    .bubble.assistant p:last-child{ margin-bottom:0; }
+    .bubble.assistant strong{ font-weight:700; }
+    .bubble.assistant em{ font-style:italic; }
+    .bubble.assistant ul,.bubble.assistant ol{ padding-left:20px; margin:8px 0 10px; }
+    .bubble.assistant li{ margin-bottom:5px; line-height:1.65; }
+    .bubble.assistant code{
+      font-family:"SFMono-Regular",Consolas,monospace;
+      font-size:12.5px; background:#F1F5F9;
+      border-radius:4px; padding:1px 5px; color:#0F172A;
+    }
+    .bubble.assistant pre{
+      background:#0F172A; border-radius:10px;
+      padding:0; overflow:hidden; margin:10px 0;
+      box-shadow:0 2px 8px rgba(0,0,0,0.15);
+    }
+    .pre-header{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:8px 14px; background:#1E293B;
+      font-size:11px; color:#94A3B8; font-weight:600; letter-spacing:0.3px;
+    }
+    .pre-copy{
+      border:none; background:transparent; color:#94A3B8;
+      cursor:pointer; font-size:11px; font-weight:600; padding:2px 6px;
+      border-radius:4px; transition:background .12s, color .12s;
+    }
+    .pre-copy:hover{ background:rgba(255,255,255,0.1); color:#fff; }
+    .pre-copy.copied{ color:#34D399; }
+    .bubble.assistant pre code{
+      display:block; padding:14px 16px;
+      background:none; border:none;
+      font-size:12.5px; color:#E2E8F0; line-height:1.6;
+      overflow-x:auto; white-space:pre;
+    }
+    .bubble.assistant h1,.bubble.assistant h2,.bubble.assistant h3{
+      font-weight:700; margin:12px 0 5px; color:#0F172A;
+    }
+    .bubble.assistant h1{ font-size:16px; }
+    .bubble.assistant h2{ font-size:15px; }
+    .bubble.assistant h3{ font-size:14px; }
+    .bubble.assistant hr{ border:none; border-top:1px solid #E2E8F0; margin:12px 0; }
+    .bubble.assistant blockquote{
+      border-left:3px solid #CBD5E1; margin:8px 0;
+      padding:4px 12px; color:#64748B; font-style:italic;
+    }
+    .bubble.assistant a{ color:var(--primary); text-decoration:none; border-bottom:1px solid rgba(47,93,169,.3); }
+    .bubble.assistant a:hover{ border-bottom-color:var(--primary); }
+
+    /* ===== Composer ===== */
+    .composer-wrap{
+      padding:10px 16px 14px;
+      background:#F7F8FA;
+      border-top:1px solid rgba(0,0,0,0.06);
+    }
+    .composer{
+      max-width:720px; margin:0 auto;
+      display:flex; gap:8px; align-items:flex-end;
+      background:#ffffff;
+      border-radius:24px;
+      padding:8px 8px 8px 16px;
+      box-shadow:0 0 0 1px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.06);
+      transition:box-shadow .2s;
+    }
+    .composer:focus-within{
+      box-shadow:0 0 0 2px var(--primary-light), 0 2px 12px rgba(47,93,169,0.12);
+    }
+    .composer textarea{
+      flex:1; border:none; outline:none; resize:none;
+      font-family:inherit; font-size:15px; line-height:1.5;
+      background:transparent; color:#1E293B;
+      max-height:160px; min-height:38px;
+      padding:4px 0;
+    }
+    .composer textarea::placeholder{ color:#94A3B8; }
+    .send{
+      width:36px; height:36px; border-radius:50%;
+      border:none; cursor:pointer;
+      background:var(--primary); color:#fff;
+      display:grid; place-items:center;
+      flex-shrink:0;
+      transition:background .15s, transform .1s, opacity .15s;
+    }
+    .send:hover{ background:var(--primary-dark); transform:scale(1.05); }
+    .send:active{ transform:scale(0.95); }
+    .send:disabled{ opacity:.35; cursor:not-allowed; transform:none; }
+
+    .hint{ margin-top:6px; font-size:11px; text-align:center; color:#94A3B8; }
+
+    /* ===== Scroll-to-bottom FAB ===== */
+    .scroll-fab{
+      position:absolute; bottom:80px; right:20px;
+      width:36px; height:36px; border-radius:50%;
+      background:#fff; border:1px solid var(--border);
+      box-shadow:0 2px 8px rgba(0,0,0,0.14);
+      display:grid; place-items:center;
+      cursor:pointer; color:var(--text-muted);
+      font-size:16px;
+      opacity:0; pointer-events:none;
+      transform:translateY(8px);
+      transition:opacity .2s, transform .2s;
+      z-index:10;
+    }
+    .scroll-fab.visible{ opacity:1; pointer-events:auto; transform:translateY(0); }
+
+    /* ===== Modals — Mature & Preview ===== */
+    .mature-overlay,
+    .preview-overlay{
+      position:fixed; inset:0;
+      background:rgba(9,30,66,0.54);
+      display:none; z-index:110;
+    }
+    .mature-overlay.open,
+    .preview-overlay.open{ display:block; }
+
+    .mature-modal,
+    .preview-modal{
+      position:fixed; inset:0;
+      display:none; z-index:120;
+      align-items:center; justify-content:center;
+    }
+    .mature-modal.open,
+    .preview-modal.open{ display:flex; }
+
+    .mature-card,
+    .preview-card{
+      width:min(960px, calc(100% - 24px));
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:var(--radius-lg);
+      box-shadow:var(--shadow-lg);
+      max-height:90vh;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
+
+    /* Modal Header — styled like drawer-header */
+    .mature-head,
+    .preview-head{
+      background:var(--primary);
+      color:#fff;
+      padding:0 20px;
+      height:56px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-shrink:0;
+    }
+    .mature-head-title,
+    .preview-head-title{
+      font-weight:700;
+      font-size:15px;
+    }
+    .mature-close,
+    .preview-close{
+      width:30px;height:30px;
+      border-radius:var(--radius);
+      border:1px solid rgba(255,255,255,0.3);
+      background:transparent;
+      cursor:pointer;
+      color:#fff;
+      font-size:18px;
+      display:grid;place-items:center;
+      transition:background .15s;
+    }
+    .mature-close:hover,
+    .preview-close:hover{ background:rgba(255,255,255,0.15); }
+
+    .mature-scroll,
+    .preview-scroll{
+      overflow:auto;
+      padding:20px 24px;
+      flex:1;
+    }
+    .mature-scroll::-webkit-scrollbar,
+    .preview-scroll::-webkit-scrollbar{ width:8px; }
+    .mature-scroll::-webkit-scrollbar-thumb,
+    .preview-scroll::-webkit-scrollbar-thumb{
+      background:rgba(100,116,139,.2);
+      border-radius:999px;
+      border:2px solid transparent;
+      background-clip:content-box;
+    }
+
+    /* Issue info blocks */
+    .issue-header{ display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
+    .issue-title{ font-size:17px; font-weight:700; color:var(--text); }
+    .issue-meta{ display:flex; gap:8px; align-items:center; font-size:12px; color:var(--text-subtle); }
+
+    .issue-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-bottom:16px;
+    }
+    @media(max-width:820px){.issue-grid{grid-template-columns:1fr;}}
+
+    .issue-block{
+      border:1px solid var(--border);
+      border-radius:var(--radius-md);
+      padding:12px 14px;
+      background:var(--bg);
+    }
+    .block-title{
+      font-size:11px; font-weight:700;
+      color:var(--text-muted);
+      text-transform:uppercase;
+      letter-spacing:0.5px;
+      margin-bottom:6px;
+    }
+    .block-body{
+      font-size:13px;
+      line-height:1.55;
+      white-space:pre-wrap;
+      color:var(--text);
+    }
+
+    /* "Chat ile Güncelle" button */
+    .btn-update-chat{
+      height:34px;
+      padding:0 14px;
+      border-radius:var(--radius);
+      border:none;
+      background:var(--primary);
+      color:#fff;
+      font-size:13px;
+      font-weight:600;
+      cursor:pointer;
+      transition:background .15s;
+      display:inline-flex;align-items:center;gap:6px;
+    }
+    .btn-update-chat:hover{ background:var(--primary-dark); }
+
+    /* Question set */
+    .question-set{
+      margin-top:20px;
+      border-top:1px solid var(--border);
+      padding-top:16px;
+    }
+    .question-title{
+      font-size:14px;
+      font-weight:700;
+      color:var(--text);
+      margin-bottom:14px;
+      border-left:4px solid var(--primary);
+      padding-left:10px;
+    }
+    .question-grid{ display:grid; gap:12px; }
+
+    .q-item label{
+      font-size:12px;
+      font-weight:700;
+      color:var(--text-muted);
+      display:block;
+      margin-bottom:6px;
+      text-transform:uppercase;
+      letter-spacing:0.3px;
+    }
+    .q-item.required label::after{
+      content:' *';
+      color:#DE350B;
+      font-weight:700;
+    }
+    .q-item.required .q-input{
+      border-color:#FF8B00;
+      box-shadow:0 0 0 2px rgba(255,139,0,.1);
+    }
+    .q-item.required .q-input[type="file"]{
+      border-color:var(--border);
+      box-shadow:none;
+    }
+    .q-item.required .ms-control{
+      border-color:#FF8B00;
+      box-shadow:0 0 0 2px rgba(255,139,0,.1);
+    }
+    #stakeholderOpinions .op-text{
+      border-color:#FF8B00;
+      box-shadow:0 0 0 2px rgba(255,139,0,.1);
+    }
+
+    .q-input{
+      width:100%;
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:8px 10px;
+      font-size:13px;
+      line-height:1.4;
+      background:var(--input-bg);
+      color:var(--text);
+      resize:vertical;
+      min-height:36px;
+      font-family:inherit;
+      transition:border-color .2s, box-shadow .2s;
+    }
+    .q-input:focus{
+      outline:none;
+      border-color:var(--primary-light);
+      box-shadow:0 0 0 2px var(--focus-ring);
+    }
+    .q-input.error{ border-color:#DE350B; box-shadow:0 0 0 2px rgba(222,53,11,.15); }
+    .q-select{ resize:none; min-height:unset; height:36px; }
+    .q-detail{ display:none; margin-top:6px; }
+    .q-detail.open{ display:block; }
+    .q-item.is-hidden{ display:none; }
+
+    .q-warn{
+      margin-top:6px;
+      padding:8px 10px;
+      border-radius:var(--radius);
+      font-size:12px;
+      line-height:1.4;
+      color:#DE350B;
+      background:rgba(222,53,11,.08);
+      border:1px solid rgba(222,53,11,.25);
+      display:none;
+    }
+    .q-warn.open{ display:block; }
+
+    .form-actions{
+      display:flex;
+      justify-content:flex-end;
+      gap:8px;
+      margin-top:16px;
+    }
+
+    /* Buttons — Jira style */
+    .btn-primary{
+      height:36px;
+      padding:0 16px;
+      border-radius:var(--radius);
+      border:none;
+      background:var(--primary);
+      color:#fff;
+      font-size:13px;
+      font-weight:600;
+      cursor:pointer;
+      transition:background .15s;
+    }
+    .btn-primary:hover{ background:var(--primary-dark); }
+
+    .btn-secondary{
+      height:36px;
+      padding:0 14px;
+      border-radius:var(--radius);
+      border:1px solid var(--border);
+      background:var(--surface);
+      color:var(--text-muted);
+      font-size:13px;
+      font-weight:600;
+      cursor:pointer;
+      transition:background .15s, border-color .15s, color .15s;
+    }
+    .btn-secondary:hover{
+      background:var(--border-light);
+      border-color:#C1C7D0;
+      color:var(--text);
+    }
+
+    /* Status pill */
+    .status-pill{
+      display:inline-block;
+      background:#006644;
+      color:#fff;
+      padding:3px 10px;
+      border-radius:3px;
+      font-size:11px;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:0.5px;
+    }
+    .status-pill.draft{ background:var(--primary); }
+
+    /* Preview layout */
+    .preview-section{
+      border:1px solid var(--border);
+      border-radius:var(--radius-md);
+      padding:12px 14px;
+      background:var(--bg);
+      margin-bottom:12px;
+    }
+    .preview-label{
+      font-size:11px;
+      font-weight:700;
+      color:var(--text-muted);
+      text-transform:uppercase;
+      letter-spacing:0.5px;
+      margin-bottom:8px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .preview-text{
+      font-size:13px;
+      line-height:1.55;
+      white-space:pre-wrap;
+      color:var(--text);
+    }
+    .preview-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+    @media(max-width:860px){.preview-grid{grid-template-columns:1fr;}}
+
+    .preview-answers{ display:grid; gap:8px; }
+    .preview-answer{
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:10px 12px;
+      background:var(--surface);
+      white-space:pre-wrap;
+      line-height:1.45;
+      font-size:13px;
+      color:var(--text);
+    }
+    .preview-answer.has-warning{
+      border-color:#FF8B00;
+      border-width:2px;
+      box-shadow:0 0 0 2px rgba(255,139,0,.12);
+      background:rgba(255,139,0,.04);
+    }
+    .preview-answer.has-error{
+      border-color:#DE350B;
+      border-width:2px;
+      box-shadow:0 0 0 2px rgba(222,53,11,.12);
+      background:rgba(222,53,11,.04);
+    }
+
+    .preview-actions{
+      display:flex; gap:8px; justify-content:flex-end;
+      margin-top:12px;
+    }
+
+    #previewAiWarningInfo.flash{
+      box-shadow:0 0 0 3px rgba(255,139,0,.4);
+      border-radius:var(--radius);
+      transition:box-shadow .3s ease;
+    }
+
+    /* Multi-select — Paydaşlar */
+    .ms{ display:flex; flex-direction:column; gap:8px; }
+    .ms-help{ font-size:12px; color:var(--text-subtle); margin-top:-2px; }
+    .ms-control{
+      border:1px solid var(--border);
+      background:var(--input-bg);
+      border-radius:var(--radius);
+      padding:7px 10px;
+      display:flex; gap:8px; align-items:center; flex-wrap:wrap;
+      cursor:text;
+      transition:border-color .2s, box-shadow .2s;
+    }
+    .ms-control:focus-within{
+      border-color:var(--primary-light);
+      box-shadow:0 0 0 2px var(--focus-ring);
+    }
+    .ms-chips{ display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+    .ms-chip{
+      display:inline-flex; align-items:center; gap:5px;
+      padding:3px 8px;
+      border-radius:3px;
+      background:#DEEBFF;
+      color:#0052CC;
+      border:none;
+      font-size:12px;
+      font-weight:600;
+    }
+    .ms-chip button{
+      width:16px;height:16px;
+      border-radius:3px;
+      border:none;
+      background:transparent;
+      cursor:pointer;
+      display:grid; place-items:center;
+      font-size:14px;
+      color:#0052CC;
+      line-height:0;
+    }
+    .ms-chip button:hover{ background:rgba(0,82,204,.15); }
+
+    .ms-input{
+      border:none; outline:none;
+      background:transparent;
+      color:var(--text);
+      font-size:13px;
+      flex:1; min-width:160px;
+      padding:4px 2px;
+      font-family:inherit;
+    }
+    .ms-input::placeholder{ color:var(--text-disabled); }
+    .ms-caret{
+      margin-left:auto;
+      width:26px;height:26px;
+      border-radius:var(--radius);
+      border:1px solid var(--border);
+      background:var(--bg);
+      cursor:pointer;
+      display:grid; place-items:center;
+      color:var(--text-muted);
+      font-size:12px;
+      transition:background .12s;
+    }
+    .ms-caret:hover{ background:var(--border-light); }
+
+    .ms-dropdown{
+      border:1px solid var(--border);
+      background:var(--surface);
+      border-radius:var(--radius);
+      overflow:hidden;
+      box-shadow:var(--shadow-md);
+      max-height:220px;
+      overflow:auto;
+      display:none;
+    }
+    .ms-dropdown.open{ display:block; }
+    .ms-item{
+      display:flex; align-items:center; gap:10px;
+      padding:9px 10px;
+      cursor:pointer;
+      font-size:13px;
+    }
+    .ms-item:hover{ background:var(--bg); }
+    .ms-item input{ width:16px;height:16px; accent-color:var(--primary); }
+    .ms-item .ms-name{ font-size:13px; color:var(--text); }
+    .ms-empty{ padding:12px 10px; font-size:13px; color:var(--text-subtle); }
+
+    /* Stakeholder opinion cards */
+    .ms-opinions{ display:grid; gap:10px; margin-top:10px; }
+    .op-card{
+      border:1px solid var(--border);
+      border-radius:var(--radius-md);
+      background:var(--surface);
+      padding:10px 14px;
+    }
+    .op-head{
+      display:flex; align-items:center;
+      justify-content:space-between; gap:10px;
+      margin-bottom:8px;
+    }
+    .op-title{ font-size:12px; font-weight:700; color:var(--primary); }
+    .op-required{ font-size:11px; color:var(--text-subtle); }
+    .op-text{
+      width:100%;
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:8px 10px;
+      font-size:13px;
+      line-height:1.4;
+      background:var(--input-bg);
+      color:var(--text);
+      resize:vertical;
+      min-height:70px;
+      font-family:inherit;
+      transition:border-color .2s, box-shadow .2s;
+    }
+    .op-text:focus{
+      outline:none;
+      border-color:var(--primary-light);
+      box-shadow:0 0 0 2px var(--focus-ring);
+    }
+    .op-text.error{ border-color:#DE350B; box-shadow:0 0 0 2px rgba(222,53,11,.15); }
+
+    /* Context Menu */
+    .ctx{
+      position:fixed; z-index:70;
+      width:180px;
+      border:1px solid var(--border);
+      background:var(--surface);
+      border-radius:var(--radius-md);
+      box-shadow:var(--shadow-lg);
+      padding:6px;
+      display:none;
+    }
+    .ctx.open{ display:block; }
+    .ctx-item{
+      width:100%; border:none;
+      background:transparent;
+      color:var(--text);
+      padding:9px 10px;
+      border-radius:var(--radius);
+      text-align:left;
+      cursor:pointer;
+      font-size:13px;
+    }
+    .ctx-item:hover{ background:var(--bg); }
+
+    /* Search overlay */
+    .search-overlay{
+      position:fixed; inset:0;
+      background:rgba(9,30,66,0.4);
+      display:none; z-index:80;
+    }
+    .search-overlay.open{ display:block; }
+    .search-panel{
+      position:absolute; top:16px;
+      left:50%; transform:translateX(-50%);
+      width:min(760px, calc(100% - 24px));
+      border:1px solid var(--border);
+      background:var(--surface);
+      border-radius:var(--radius-lg);
+      overflow:hidden;
+      box-shadow:var(--shadow-lg);
+    }
+    .search-head{
+      display:flex; gap:10px; align-items:center;
+      padding:10px 14px;
+      border-bottom:1px solid var(--border);
+      background:var(--bg);
+    }
+    .search-input{
+      flex:1; border:none; outline:none;
+      font-size:14px;
+      background:transparent;
+      color:var(--text);
+      font-family:inherit;
+    }
+    .search-input::placeholder{ color:var(--text-disabled); }
+    .search-close{
+      width:30px;height:30px;
+      border-radius:var(--radius);
+      border:1px solid var(--border);
+      background:transparent;
+      cursor:pointer;
+      color:var(--text-muted);
+      font-size:16px;
+      display:grid;place-items:center;
+      transition:background .12s;
+    }
+    .search-close:hover{ background:var(--border-light); }
+
+    .search-results{ max-height:min(60vh,500px); overflow:auto; padding:6px; }
+    .sr-item{
+      width:100%; border:none;
+      background:transparent; color:var(--text);
+      padding:9px 10px;
+      border-radius:var(--radius);
+      cursor:pointer; text-align:left;
+      display:flex; flex-direction:column; gap:3px;
+    }
+    .sr-item:hover{ background:var(--bg); }
+    .sr-title{ font-size:12px; color:var(--text-subtle); font-weight:600; text-transform:uppercase; letter-spacing:0.3px; }
+    .sr-snippet{ font-size:13px; line-height:1.35; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .sr-empty{ padding:14px 10px; color:var(--text-subtle); font-size:13px; }
+
+    /* AI Warning Info box */
+    #previewAiWarningInfo > div{
+      background:rgba(255,139,0,.08) !important;
+      border:1px solid rgba(255,139,0,.3) !important;
+      border-radius:var(--radius-md) !important;
+      color:var(--text-muted) !important;
+    }
+
+    /* Warning section */
+    .preview-warnings > div{
+      border-left:3px solid #DE350B !important;
+      border-radius:var(--radius) !important;
+      background:rgba(222,53,11,.05) !important;
+    }
+
+    @media(max-width:860px){ .sidebar{width:220px} }
+    @media(max-width:680px){ .sidebar{width:190px} }
+
+    /* ===== Modal Stepper ===== */
+    .modal-stepper{
+      display:flex; align-items:center; justify-content:center;
+      gap:0; padding:14px 24px;
+      border-bottom:1px solid var(--border);
+      background:var(--bg);
+    }
+    .step-item{
+      display:flex; align-items:center; gap:8px;
+      font-size:13px; font-weight:600; color:var(--text-disabled);
+    }
+    .step-num{
+      width:26px; height:26px; border-radius:50%;
+      border:2px solid var(--border);
+      display:grid; place-items:center;
+      font-size:12px; font-weight:700;
+      background:var(--surface); color:var(--text-disabled);
+      transition:all .2s;
+    }
+    .step-item.active .step-num{
+      background:var(--primary); border-color:var(--primary); color:#fff;
+    }
+    .step-item.active{ color:var(--text); }
+    .step-item.done .step-num{
+      background:var(--success); border-color:var(--success); color:#fff;
+    }
+    .step-item.done{ color:var(--text-muted); }
+    .step-line{
+      width:48px; height:2px; background:var(--border); margin:0 4px;
+      flex-shrink:0; transition:background .2s;
+    }
+    .step-line.done{ background:var(--success); }
+
+    /* ===== Welcome / Suggestion cards ===== */
+    .welcome-screen{
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      min-height:calc(100vh - 180px);
+      padding:40px 20px; text-align:center; gap:20px;
+    }
+    .welcome-avatar{
+      width:64px; height:64px; border-radius:50%;
+      background:linear-gradient(135deg, var(--primary) 0%, #4C9AFF 100%);
+      display:grid; place-items:center;
+      color:#fff; font-size:26px; font-weight:700;
+      box-shadow:0 8px 24px rgba(47,93,169,0.25);
+      overflow:hidden;
+    }
+    .welcome-avatar img{ width:100%; height:100%; object-fit:cover; border-radius:50%; }
+    .welcome-title{
+      font-size:22px; font-weight:700; color:#0F172A; letter-spacing:-0.3px;
+      display:flex; align-items:center; justify-content:center; gap:10px;
+    }
+    .welcome-title img{ width:18px; height:18px; border-radius:50%; object-fit:cover; }
+    .welcome-sub{ font-size:14px; color:#64748B; max-width:360px; line-height:1.7; }
+    .suggestion-row{
+      display:flex; flex-wrap:wrap; gap:10px; justify-content:center;
+      max-width:620px; margin-top:6px;
+    }
+    .suggestion-card{
+      padding:10px 16px;
+      border:1.5px solid #E2E8F0;
+      border-radius:20px;
+      background:#fff;
+      font-size:13.5px; color:#475569;
+      cursor:pointer; text-align:left;
+      box-shadow:0 1px 4px rgba(0,0,0,0.06);
+      transition:all .15s;
+      font-family:inherit;
+      display:flex; align-items:center;
+    }
+    .suggestion-card:hover{
+      background:#F8FAFF; border-color:#93C5FD; color:#1E293B;
+      box-shadow:0 4px 12px rgba(47,93,169,0.1);
+      transform:translateY(-1px);
+    }
+
+    /* ===== Typing indicator ===== */
+    .typing-row{ display:flex; gap:10px; align-items:flex-start; padding:0; margin-top:28px; }
+    .typing-avatar{
+      width:28px; height:28px; border-radius:50%;
+      background:var(--primary); display:grid; place-items:center;
+      color:#fff; font-size:12px; font-weight:700; flex-shrink:0;
+      margin-top:2px; overflow:hidden;
+    }
+    .typing-avatar img{ width:100%; height:100%; object-fit:cover; border-radius:50%; }
+    .typing-bubble{
+      background:#EEF2FB; border:1px solid #DDE6F5;
+      border-radius:12px; padding:14px 18px;
+      display:flex; gap:5px; align-items:center;
+    }
+    .typing-dot{
+      width:7px; height:7px; border-radius:50%; background:var(--text-subtle);
+      animation:typingBounce 1.2s infinite ease-in-out;
+    }
+    .typing-dot:nth-child(1){ animation-delay:0s; }
+    .typing-dot:nth-child(2){ animation-delay:.2s; }
+    .typing-dot:nth-child(3){ animation-delay:.4s; }
+    @keyframes typingBounce{
+      0%,60%,100%{ transform:translateY(0); opacity:.5; }
+      30%{ transform:translateY(-6px); opacity:1; }
+    }
+
+    /* ===== Message avatars + timestamps ===== */
+    .msg-avatar{
+      width:28px; height:28px; border-radius:50%;
+      display:grid; place-items:center;
+      font-size:11px; font-weight:700; flex-shrink:0;
+      align-self:flex-start; margin-top:2px; overflow:hidden;
+    }
+    .msg-avatar img{ width:100%; height:100%; object-fit:cover; border-radius:50%; }
+    .msg-avatar.assistant{ background:var(--primary); color:#fff; }
+    .msg-avatar.user{ background:#64748B; color:#fff; align-self:flex-end; margin-top:0; margin-bottom:2px; }
+    /* Assistant msg-wrap fills remaining width; user capped at 85% */
+    .msg-wrap{ display:flex; flex-direction:column; gap:3px; }
+    .row:not(.user) .msg-wrap{ flex:1; align-items:flex-start; }
+    .row.user .msg-wrap{ max-width:85%; align-items:flex-end; }
+
+    /* Timestamp: appears on hover, only on last of group */
+    .msg-ts{
+      font-size:10.5px; color:#94A3B8; padding:0 4px;
+      opacity:0; transition:opacity .15s; white-space:nowrap;
+    }
+    .row:hover .msg-ts{ opacity:1; }
+    .row.grouped .msg-ts{ display:none; }
+
+    /* ===== Hover action toolbar ===== */
+    .msg-actions{
+      display:flex; gap:3px; opacity:0; pointer-events:none;
+      transition:opacity .15s;
+      margin-bottom:2px;
+    }
+    .row:hover .msg-actions{ opacity:1; pointer-events:auto; }
+    .msg-action{
+      height:22px; padding:0 8px;
+      border-radius:11px;
+      border:1px solid rgba(0,0,0,0.1);
+      background:rgba(255,255,255,0.9);
+      backdrop-filter:blur(4px);
+      color:#64748B;
+      font-size:11px; font-weight:600; cursor:pointer;
+      display:flex; align-items:center; gap:3px; font-family:inherit;
+      box-shadow:0 1px 3px rgba(0,0,0,0.08);
+      transition:background .12s, color .12s, box-shadow .12s;
+    }
+    .msg-action:hover{ background:#fff; color:#1E293B; box-shadow:0 2px 6px rgba(0,0,0,0.12); }
+    .msg-action.copied{ color:var(--success); border-color:var(--success); }
+
+    /* ===== Sidebar: conv-info wrapper + snippet ===== */
+    .conv-info{ flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
+    .conv-snippet{
+      font-size:11px; color:var(--text-subtle);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .conv-item.active .conv-snippet{ color:var(--text-muted); }
+    .sb-empty{
+      padding:28px 16px; text-align:center;
+      color:var(--text-subtle); font-size:13px; line-height:1.65;
+    }
+
+    /* ===== Calls panel filters ===== */
+    .calls-filter-wrap{
+      padding:8px 12px 0;
+      display:flex; flex-wrap:wrap; gap:6px;
+      border-bottom:1px solid var(--border);
+      padding-bottom:10px;
+    }
+    .calls-filter-btn{
+      height:26px; padding:0 12px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:var(--surface);
+      color:var(--text-muted);
+      font-size:12px; font-weight:600; cursor:pointer;
+      font-family:inherit;
+      transition:background .12s, border-color .12s, color .12s;
+      white-space:nowrap;
+    }
+    .calls-filter-btn:hover{ background:var(--border-light); color:var(--text); }
+    .calls-filter-btn.active{
+      background:var(--primary); border-color:var(--primary); color:#fff;
+    }
+
+    /* ===== Calls panel search ===== */
+    .calls-search-wrap{ padding:10px 12px; border-bottom:1px solid var(--border); }
+    .calls-search-input{
+      width:100%; padding:7px 10px;
+      border:1px solid var(--border); border-radius:var(--radius);
+      font-size:13px; font-family:inherit;
+      background:var(--bg); color:var(--text); outline:none;
+      transition:border-color .2s, box-shadow .2s;
+    }
+    .calls-search-input:focus{
+      border-color:var(--primary-light);
+      box-shadow:0 0 0 2px var(--focus-ring);
+    }
+    .call-item{ border-left:4px solid var(--border-light); }
+    .call-item.s-open{ border-left-color:#36B37E; }
+    .call-item.s-draft{ border-left-color:#0052CC; }
+    .call-item.s-waiting{ border-left-color:#FF8B00; }
+    .call-item.s-closed{ border-left-color:#6B778C; }
+
+    /* ===== Feedback Modal ===== */
+    .feedback-overlay{
+      position:fixed; inset:0;
+      background:rgba(9,30,66,0.45);
+      display:none; z-index:130;
+      align-items:center; justify-content:center;
+    }
+    .feedback-overlay.open{ display:flex; }
+    .feedback-card{
+      width:min(420px, calc(100% - 32px));
+      background:var(--surface);
+      border-radius:12px;
+      box-shadow:0 12px 40px rgba(9,30,66,0.22);
+      overflow:hidden;
+      animation:msgIn .2s ease-out both;
+    }
+    .feedback-head{
+      background:var(--primary);
+      padding:16px 20px;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .feedback-head-title{
+      font-size:15px; font-weight:700; color:#fff;
+    }
+    .feedback-close{
+      width:28px; height:28px; border-radius:var(--radius);
+      border:1px solid rgba(255,255,255,0.3);
+      background:transparent; cursor:pointer;
+      color:#fff; font-size:16px;
+      display:grid; place-items:center;
+      transition:background .15s;
+    }
+    .feedback-close:hover{ background:rgba(255,255,255,0.15); }
+    .feedback-body{
+      padding:24px 24px 20px;
+      display:flex; flex-direction:column; gap:18px;
+    }
+    .feedback-subtitle{
+      font-size:13.5px; color:var(--text-muted); line-height:1.6; text-align:center;
+    }
+    /* Star rating */
+    .star-row{
+      display:flex; justify-content:center; gap:8px;
+    }
+    .star-btn{
+      font-size:30px; background:none; border:none;
+      cursor:pointer; padding:2px 4px;
+      color:#CBD5E1;
+      transition:color .12s, transform .1s;
+      line-height:1;
+    }
+    .star-btn:hover,
+    .star-btn.active{ color:#F59E0B; transform:scale(1.15); }
+    .star-label{
+      text-align:center; font-size:12px; font-weight:600;
+      color:var(--text-subtle); min-height:18px;
+    }
+    .feedback-textarea{
+      width:100%; border:1px solid var(--border);
+      border-radius:var(--radius-md);
+      padding:10px 12px; font-size:13px; font-family:inherit;
+      line-height:1.5; color:var(--text);
+      background:var(--bg); resize:none; min-height:80px;
+      outline:none; transition:border-color .2s, box-shadow .2s;
+    }
+    .feedback-textarea:focus{
+      border-color:var(--primary-light);
+      box-shadow:0 0 0 2px var(--focus-ring);
+    }
+    .feedback-actions{
+      display:flex; gap:8px; justify-content:flex-end;
+    }
+
+    /* ===== Toast ===== */
+    .toast-container{
+      position:fixed; bottom:24px; right:24px; z-index:9999;
+      display:flex; flex-direction:column-reverse; gap:8px;
+      pointer-events:none;
+    }
+    .toast{
+      padding:12px 18px; border-radius:var(--radius-md); color:#fff;
+      font-size:13px; font-weight:500;
+      box-shadow:0 4px 12px rgba(0,0,0,0.18);
+      display:flex; align-items:center; gap:10px;
+      animation:toastIn .25s ease-out forwards;
+      min-width:220px; max-width:340px;
+      pointer-events:auto;
+    }
+    .toast.success{ background:#00875A; }
+    .toast.error{ background:#DE350B; }
+    .toast.info{ background:var(--primary); }
+    @keyframes toastIn{ from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+    @keyframes toastOut{ to{opacity:0;transform:translateY(6px);} }
+
+    .brand-with-icon{ display:flex; align-items:center; gap:8px; }
+    .brand-with-icon img{ width:22px; height:22px; border-radius:50%; object-fit:cover; }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sb-top">
+        <div class="sb-brand" id="sbBrand"></div>
+        <button class="sb-new-btn" id="btnNew" type="button" title="Yeni sohbet başlat">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          Yeni
+        </button>
+        <button class="sb-btn" id="btnSearch" title="Ara" aria-label="Ara">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="11" cy="11" r="6.5"/><path d="M16.2 16.2L21 21"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="conversation-list" id="conversationList"></div>
+      <div class="sb-bottom"><div id="sbUserArea"></div></div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <header class="header">
+        <div class="header-right">
+          <button class="tiny-btn primary" id="btnCalls" onclick="openCallsPanel()">Fikirlerim</button>
+        </div>
+      </header>
+
+      <div class="chat-wrap" id="chatWrap">
+        <div class="chat" id="chat"></div>
+        <button class="scroll-fab" id="scrollFab" title="Aşağı kaydır">↓</button>
+      </div>
+
+      <div class="composer-wrap">
+        <div class="composer">
+          <textarea id="input" placeholder="Fikrinden bahset, birlikte olgunlaştıralım…"></textarea>
+          <button class="send" id="sendBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+        </div>
+        <div class="hint">Enter = gönder &nbsp;•&nbsp; Shift+Enter = yeni satır &nbsp;•&nbsp; Esc = kapat</div>
+      </div>
+    </main>
+
+    <!-- Calls panel -->
+    <div class="calls-overlay" id="callsOverlay" aria-hidden="true"></div>
+    <aside class="calls-panel" id="callsPanel" aria-hidden="true">
+      <div class="calls-head">
+        <div class="calls-head-title">Fikirlerim</div>
+        <button class="calls-close" id="callsClose" title="Kapat">&times;</button>
+      </div>
+      <div class="calls-search-wrap">
+        <input class="calls-search-input" id="callsSearch" type="text" placeholder="Fikirlerde ara…" autocomplete="off"/>
+      </div>
+      <div class="calls-filter-wrap" id="callsFilterWrap"></div>
+      <div class="calls-list" id="callsList"></div>
+    </aside>
+
+    <!-- Mature modal -->
+    <div class="mature-overlay" id="matureOverlay" aria-hidden="true"></div>
+    <div class="mature-modal" id="matureModal" aria-hidden="true">
+      <div class="mature-card">
+        <div class="mature-head">
+          <div class="mature-head-title" id="matureTitle">Kayıt</div>
+          <button class="mature-close" id="matureClose" title="Kapat">✕</button>
+        </div>
+        <div class="modal-stepper">
+          <div class="step-item active" id="stepForm">
+            <div class="step-num">1</div><span>Form</span>
+          </div>
+          <div class="step-line" id="stepLine"></div>
+          <div class="step-item" id="stepPreview">
+            <div class="step-num">2</div><span>Önizleme</span>
+          </div>
+        </div>
+        <div class="mature-scroll">
+          <div class="issue-header">
+            <div class="issue-title" id="matureTitleDisplay">Kayıt</div>
+            <div class="issue-meta">
+              <span class="status-pill" id="matureStatus">Durum</span>
+              <span id="matureTime">Tarih</span>
+            </div>
+          </div>
+
+          <div class="issue-grid">
+            <div class="issue-block">
+              <div class="block-title">Özet</div>
+              <div class="block-body" id="matureSummary">—</div>
+            </div>
+            <div class="issue-block">
+              <div class="block-title">Açıklama</div>
+              <div class="block-body" id="matureDescription">—</div>
+            </div>
+            <div class="issue-block">
+              <div class="block-title">Etkilenecek Kanallar</div>
+              <div class="block-body" id="matureChannels">—</div>
+            </div>
+            <div class="issue-block">
+              <div class="block-title">Çözüm Tipi</div>
+              <div class="block-body" id="matureSolutionType">—</div>
+            </div>
+          </div>
+
+          <div style="margin:4px 0 16px; display:flex; justify-content:flex-end;">
+            <button class="btn-update-chat" id="matureBtnUpdate" type="button">
+              💬 Chat ile Güncelle
+            </button>
+          </div>
+
+          <div class="question-set">
+            <div class="question-title">Olgunlaştırma Soruları</div>
+
+            <div class="question-grid">
+              <!-- Q1 -->
+              <div class="q-item" id="qStakeholders">
+                <label>Etkisi olan iş birimlerinden aldığınız görüşleri yazar mısınız?</label>
+                <div class="ms">
+                  <div class="ms-help">Birden fazla paydaş seçebilirsiniz.</div>
+                  <div class="ms-control" id="msControl" tabindex="0" aria-label="Paydaş seçimi">
+                    <div class="ms-chips" id="msChips"></div>
+                    <input class="ms-input" id="msInput" type="text" placeholder="Paydaş ara ve ekle…" autocomplete="off"/>
+                    <button class="ms-caret" type="button" id="msCaret" aria-label="Listeyi aç/kapat">▾</button>
+                  </div>
+                  <div class="ms-dropdown" id="msDropdown" role="listbox" aria-label="Paydaş listesi"></div>
+                  <input type="hidden" id="stakeholdersValue" name="stakeholdersValue" value="">
+                </div>
+                <div id="stakeholderOpinions" class="ms-opinions"></div>
+                <input type="hidden" id="stakeholderOpinionsValue" name="stakeholderOpinionsValue" value="">
+              </div>
+
+              <div class="q-item required">
+                <label>Bu talep için NPS ölçümü var mı? Varsa hangi noktalarda yapılacak?</label>
+                <select class="q-input q-select" id="q2Select">
+                  <option value="" selected>Seçiniz</option>
+                  <option value="Evet">Evet</option>
+                  <option value="Hayır">Hayır</option>
+                </select>
+                <textarea class="q-input q-detail" id="q2Detail" rows="2" placeholder="NPS ölçüm noktalarını yazınız..."></textarea>
+                <div class="q-warn" id="q2Warn">NPS ölçümü için "Müşteri Deneyimi Yönetimi" etkisi olan iş birimlerine seçilmelidir.</div>
+              </div>
+
+              <div class="q-item required">
+                <label>Müşteriye yansıyan ekranlarda ekleme veya bir değişiklik var mı?</label>
+                <select class="q-input q-select" id="q3Select">
+                  <option value="" selected>Seçiniz</option>
+                  <option value="Evet">Evet</option>
+                  <option value="Hayır">Hayır</option>
+                </select>
+                <textarea class="q-input q-detail" id="q3Detail" rows="2" placeholder="Detay yazınız..."></textarea>
+                <div class="q-warn" id="q3AiWarn" style="display:none;"></div>
+              </div>
+
+              <div class="q-item required" id="q4Item">
+                <label>Kullanıcı davranışları Countly vs bir araçla analiz edilecek mi? Var ise detayı</label>
+                <select class="q-input q-select" id="q5Select">
+                  <option value="" selected>Seçiniz</option>
+                  <option value="Var">Var</option>
+                  <option value="Yok">Yok</option>
+                </select>
+                <textarea class="q-input q-detail" id="q5Detail" rows="2" placeholder="Detay yazınız..."></textarea>
+                <input class="q-input q-detail" id="q5Attachment" type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg">
+                <div class="q-warn" id="q4AiWarn" style="display:none;"></div>
+              </div>
+
+              <div class="q-item required">
+                <label>Dış parti bir sistemle entegrasyon isteniyor mu? Evet ise Gizlilik Taahhüdü alındı mı?</label>
+                <select class="q-input q-select" id="q8Select">
+                  <option value="" selected>Seçiniz</option>
+                  <option value="Evet">Evet</option>
+                  <option value="Hayır">Hayır</option>
+                </select>
+                <input class="q-input q-detail" id="q8Attachment" type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg">
+                <div class="q-warn" id="q5AiWarn" style="display:none;"></div>
+              </div>
+
+              <div class="q-item required">
+                <label>Bu taleple ilgili raporlama/dashboard ihtiyacınız var mı? Varsa detay yazınız.</label>
+                <select class="q-input q-select" id="q10Select">
+                  <option value="" selected>Seçiniz</option>
+                  <option value="Evet">Evet</option>
+                  <option value="Hayır">Hayır</option>
+                </select>
+                <textarea class="q-input q-detail" id="q10Detail" rows="2" placeholder="Raporlama/dashboard ihtiyacınızı yazınız..."></textarea>
+                <div class="q-warn" id="q6AiWarn" style="display:none;"></div>
+              </div>
+
+              <div class="q-item is-hidden required" id="q7Item">
+                <label>Ekran Kodu</label>
+                <input class="q-input" id="q7Code" type="text" placeholder="Örn: MOB-001">
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn-secondary" type="button" onclick="closeMatureModal()">İptal</button>
+              <button class="btn-primary" id="btnPreview" type="button">İlerle</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preview modal -->
+    <div class="preview-overlay" id="previewOverlay" aria-hidden="true"></div>
+    <div class="preview-modal" id="previewModal" aria-hidden="true">
+      <div class="preview-card">
+        <div class="preview-head">
+          <div class="preview-head-title">Önizleme</div>
+          <button class="mature-close" id="previewClose" title="Kapat">✕</button>
+        </div>
+        <div class="modal-stepper">
+          <div class="step-item done">
+            <div class="step-num">✓</div><span>Form</span>
+          </div>
+          <div class="step-line done"></div>
+          <div class="step-item active">
+            <div class="step-num">2</div><span>Önizleme</span>
+          </div>
+        </div>
+        <div class="preview-scroll">
+          <div class="preview-section">
+            <div class="preview-label">Kayıt</div>
+            <div class="preview-text" id="previewTitle">—</div>
+          </div>
+
+          <div class="preview-grid">
+            <div class="preview-section">
+              <div class="preview-label">Özet</div>
+              <div class="preview-text" id="previewSummary">—</div>
+            </div>
+            <div class="preview-section">
+              <div class="preview-label">Açıklama</div>
+              <div class="preview-text" id="previewDescription">—</div>
+            </div>
+          </div>
+
+          <div class="preview-section">
+            <div class="preview-label">
+              <span>Custom Alanlar</span>
+              <button class="btn-update-chat" id="btnUpdate" type="button">💬 Chat ile Güncelle</button>
+            </div>
+            <div class="preview-answers" id="previewCustomFields"></div>
+          </div>
+
+          <div class="preview-section">
+            <div class="preview-label">Sorular ve Yanıtlar</div>
+            <div id="previewAiWarningInfo" style="display:none; margin-bottom:10px;">
+              <div style="padding:12px 16px; font-size:13px; line-height:1.6;">
+                <div style="font-weight:700; color:#FF8B00; margin-bottom:6px;">ℹ️ AI Tutarlılık Kontrolü</div>
+                <div>AI tutarlılık kontrolünden bu alanlar için dönüş alındı. Tooltip iconları üzerinden detayına bakabilirsiniz. Güncelleme yapmak istiyorsanız <strong>"Geri Dön"</strong> ile olgunlaştırma formuna dönüp alanları güncelleyebilir veya bu şekilde devam etmek istiyorsanız tekrar <strong>"Yönetici Onayına Gönder"</strong> butonuna basın.</div>
+              </div>
+            </div>
+            <div class="preview-answers" id="previewAnswers"></div>
+          </div>
+
+          <div class="preview-section" id="previewWarningsSection" style="display:none;">
+            <div class="preview-label" style="color:#DE350B;">⚠️ Tutarlılık Kontrolü Uyarıları</div>
+            <div class="preview-warnings" id="previewWarnings"></div>
+          </div>
+
+          <div class="preview-actions">
+            <button class="btn-secondary" id="btnBack" type="button">Geri Dön</button>
+            <button class="btn-primary" id="btnApprove" type="button">Yönetici Onayına Gönder</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Context menu -->
+  <div class="ctx" id="ctxMenu" role="menu" aria-hidden="true">
+    <button class="ctx-item" id="ctxRename">Yeniden adlandır</button>
+    <button class="ctx-item" id="ctxDelete">Sil</button>
+  </div>
+
+  <!-- Search overlay -->
+  <div class="search-overlay" id="searchOverlay" aria-hidden="true">
+    <div class="search-panel" role="dialog" aria-modal="true">
+      <div class="search-head">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B778C" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16.2 16.2L21 21"/></svg>
+        <input class="search-input" id="searchInput" placeholder="Sohbetlerde ara" autocomplete="off"/>
+        <button class="search-close" id="searchClose" title="Kapat">✕</button>
+      </div>
+      <div class="search-results" id="searchResults"></div>
+    </div>
+  </div>
+
+  <!-- Feedback modal -->
+  <div class="feedback-overlay" id="feedbackOverlay" aria-hidden="true">
+    <div class="feedback-card" role="dialog" aria-modal="true" aria-labelledby="feedbackTitle">
+      <div class="feedback-head">
+        <div class="feedback-head-title" id="feedbackTitle">Geri Bildirim</div>
+        <button class="feedback-close" id="feedbackClose" title="Kapat">✕</button>
+      </div>
+      <div class="feedback-body">
+        <div class="feedback-subtitle">Deneyiminizi değerlendirerek iyileştirmemize yardımcı olun.</div>
+        <div>
+          <div class="star-row" id="starRow">
+            <button class="star-btn" type="button" data-val="1" title="1 yıldız">★</button>
+            <button class="star-btn" type="button" data-val="2" title="2 yıldız">★</button>
+            <button class="star-btn" type="button" data-val="3" title="3 yıldız">★</button>
+            <button class="star-btn" type="button" data-val="4" title="4 yıldız">★</button>
+            <button class="star-btn" type="button" data-val="5" title="5 yıldız">★</button>
+          </div>
+          <div class="star-label" id="starLabel"></div>
+        </div>
+        <textarea class="feedback-textarea" id="feedbackText" placeholder="Görüşlerinizi paylaşın (isteğe bağlı)…" rows="3"></textarea>
+        <div class="feedback-actions">
+          <button class="btn-secondary" id="feedbackSkip" type="button">Atla</button>
+          <button class="btn-primary" id="feedbackSubmit" type="button">Gönder</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    // ===== DOM =====
+    const chat = document.getElementById('chat');
+    const chatWrap = document.getElementById('chatWrap');
+    const input = document.getElementById('input');
+    const sendBtn = document.getElementById('sendBtn');
+    const conversationListEl = document.getElementById('conversationList');
+
+    const btnNew = document.getElementById('btnNew');
+    const btnSearch = document.getElementById('btnSearch');
+    const btnCalls = document.getElementById('btnCalls');
+
+    const ctxMenu = document.getElementById('ctxMenu');
+    const ctxRename = document.getElementById('ctxRename');
+    const ctxDelete = document.getElementById('ctxDelete');
+
+    const searchOverlay = document.getElementById('searchOverlay');
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+    const searchClose = document.getElementById('searchClose');
+
+    const callsPanel = document.getElementById('callsPanel');
+    const callsOverlay = document.getElementById('callsOverlay');
+    const callsClose = document.getElementById('callsClose');
+    const callsList = document.getElementById('callsList');
+
+    const matureOverlay = document.getElementById('matureOverlay');
+    const matureModal = document.getElementById('matureModal');
+    const matureClose = document.getElementById('matureClose');
+    const matureTitle = document.getElementById('matureTitle');
+    const matureTitleDisplay = document.getElementById('matureTitleDisplay');
+    const matureStatus = document.getElementById('matureStatus');
+    const matureTime = document.getElementById('matureTime');
+    const matureSummary = document.getElementById('matureSummary');
+    const matureDescription = document.getElementById('matureDescription');
+    const matureChannels = document.getElementById('matureChannels');
+    const matureSolutionType = document.getElementById('matureSolutionType');
+    const matureBtnUpdate = document.getElementById('matureBtnUpdate');
+    const btnPreview = document.getElementById('btnPreview');
+
+    const previewOverlay = document.getElementById('previewOverlay');
+    const previewModal = document.getElementById('previewModal');
+    const previewClose = document.getElementById('previewClose');
+    const previewTitle = document.getElementById('previewTitle');
+    const previewSummary = document.getElementById('previewSummary');
+    const previewDescription = document.getElementById('previewDescription');
+    const previewCustomFields = document.getElementById('previewCustomFields');
+    const previewAnswers = document.getElementById('previewAnswers');
+    const btnUpdate = document.getElementById('btnUpdate');
+    const btnApprove = document.getElementById('btnApprove');
+    const btnBack = document.getElementById('btnBack');
+
+    // ===== State =====
+    const STORAGE_KEY = 'cgpt_clone_v2';
+    let conversations = [];
+    let activeConversationId = null;
+    let _jiraUser = null; // { displayName, emailAddress, avatarUrl, initials }
+    let ctxTargetId = null;
+    let lastSearch = '';
+    const OPEN_NEW_ON_LOAD = false;
+
+    const WELCOME_MESSAGE =
+      `👋 Merhaba!\n\nFikrini net, değerlendirilebilir bir hale getirmek için\nsana birkaç kısa soru soracağım.\n\nCevaplarını analiz edip formu birlikte dolduracağız.\nEn sonda özetleyip onayını isteyeceğim.\n\nHazırsan başlayalım mı? 🙂`;
+
+    const USE_LOCAL = (new URLSearchParams(location.search).get('local') === '1');
+    const SR_BASE = (USE_LOCAL || location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+      ? 'http://localhost:8000'
+      : 'https://atlastest.fibabanka.local/jira/rest/scriptrunner/latest/custom';
+    const SR_CHAT_URL = SR_BASE + '/promptflowchat';
+    const SR_THREADS_URL = SR_BASE + '/fibarprChatThreads';
+    const SR_MESSAGES_URL = SR_BASE + '/fibarprChatMessages';
+    const SR_CALLS_URL = SR_BASE + '/fibarprIdeaCalls';
+    const SR_UNITS_URL = SR_BASE + '/fibarprIdeaUnits';
+    const SR_APPROVE_URL = SR_BASE + '/fibarprIdeaApprove';
+    const SR_FEEDBACK_URL = SR_BASE + '/fibarprFeedback';
+    const FILOZOF_AVATAR = 'https://atlastest.fibabanka.local/jira/secure/attachment/168402/fi.png?dowload=1';
+    const CALLS_THREAD_FIELD = '';
+    const CALLS_CUSTOM_FIELDS = [];
+
+    // ===== Utils =====
+    function uid(){ return 'c_' + Math.random().toString(16).slice(2) + Date.now().toString(16); }
+    function nowMs(){ return Date.now(); }
+    function startOfDayMs(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(); }
+    function scrollToBottom(){
+      const el = chatWrap || chat;
+      if(!el) return;
+      requestAnimationFrame(() => { el.scrollTop = el.scrollHeight; });
+    }
+
+    // ===== Lightweight Markdown Parser =====
+    function renderMarkdown(text){
+      // Escape HTML first
+      const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+      // Fenced code blocks  ```lang\n...\n```
+      let codeBlockIdx = 0;
+      text = text.replace(/```([\w]*)\n?([\s\S]*?)```/g, (_, lang, code) => {
+        const id = 'cb_' + (codeBlockIdx++);
+        const label = lang ? lang.toUpperCase() : 'KOD';
+        return `<pre><div class="pre-header"><span>${label}</span><button class="pre-copy" data-code-id="${id}" type="button">Kopyala</button></div><code id="${id}">${esc(code.trimEnd())}</code></pre>`;
+      });
+
+      const lines = text.split('\n');
+      const out = [];
+      let inList = null; // 'ul' | 'ol' | null
+      let para = [];
+
+      function flushPara(){
+        if(!para.length) return;
+        const content = para.join(' ').trim();
+        if(content) out.push('<p>' + content + '</p>');
+        para = [];
+      }
+      function flushList(){
+        if(!inList) return;
+        out.push('</' + inList + '>');
+        inList = null;
+      }
+
+      function inline(s){
+        // bold **..** or __...__
+        s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        s = s.replace(/__(.+?)__/g, '<strong>$1</strong>');
+        // italic *..* or _.._
+        s = s.replace(/\*(.+?)\*/g, '<em>$1</em>');
+        s = s.replace(/_([^_]+?)_/g, '<em>$1</em>');
+        // inline code `..`
+        s = s.replace(/`([^`]+)`/g, (_, c) => '<code>' + esc(c) + '</code>');
+        // link [text](url)
+        s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+        return s;
+      }
+
+      for(let i = 0; i < lines.length; i++){
+        const line = lines[i];
+
+        // Already-converted pre block — pass through
+        if(line.startsWith('<pre>') || line.startsWith('</pre>') || inList === '__pre__'){
+          flushPara(); flushList();
+          out.push(line); continue;
+        }
+
+        // Heading
+        const hm = line.match(/^(#{1,3})\s+(.*)/);
+        if(hm){ flushPara(); flushList(); const n=hm[1].length; out.push(`<h${n}>${inline(hm[2])}</h${n}>`); continue; }
+
+        // HR
+        if(/^(-{3,}|\*{3,})$/.test(line.trim())){ flushPara(); flushList(); out.push('<hr>'); continue; }
+
+        // Blockquote
+        if(line.startsWith('> ')){ flushPara(); flushList(); out.push('<blockquote>'+inline(line.slice(2))+'</blockquote>'); continue; }
+
+        // Unordered list
+        const ulm = line.match(/^[\-\*]\s+(.*)/);
+        if(ulm){
+          flushPara();
+          if(inList === 'ol'){ out.push('</ol>'); inList = null; }
+          if(!inList){ out.push('<ul>'); inList = 'ul'; }
+          out.push('<li>' + inline(ulm[1]) + '</li>');
+          continue;
+        }
+
+        // Ordered list
+        const olm = line.match(/^\d+\.\s+(.*)/);
+        if(olm){
+          flushPara();
+          if(inList === 'ul'){ out.push('</ul>'); inList = null; }
+          if(!inList){ out.push('<ol>'); inList = 'ol'; }
+          out.push('<li>' + inline(olm[1]) + '</li>');
+          continue;
+        }
+
+        // Blank line
+        if(line.trim() === ''){ flushPara(); flushList(); continue; }
+
+        // Normal text — accumulate into paragraph
+        flushList();
+        para.push(inline(line));
+      }
+      flushPara(); flushList();
+      return out.join('\n');
+    }
+
+    // ===== Feedback Modal =====
+    const STAR_LABELS = ['', 'Çok kötü', 'Kötü', 'Orta', 'İyi', 'Harika!'];
+    let _feedbackRating = 0;
+    let _feedbackSource = ''; // 'chat' | 'form'
+
+    function openFeedbackModal(source){
+      _feedbackSource = source || 'chat';
+      _feedbackRating = 0;
+      document.getElementById('feedbackText').value = '';
+      document.getElementById('starLabel').textContent = '';
+      document.querySelectorAll('.star-btn').forEach(b => b.classList.remove('active'));
+      const overlay = document.getElementById('feedbackOverlay');
+      overlay.classList.add('open');
+      overlay.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeFeedbackModal(){
+      const overlay = document.getElementById('feedbackOverlay');
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden', 'true');
+    }
+
+    function _setRating(val){
+      _feedbackRating = val;
+      document.querySelectorAll('.star-btn').forEach(b => {
+        b.classList.toggle('active', Number(b.dataset.val) <= val);
+      });
+      document.getElementById('starLabel').textContent = STAR_LABELS[val] || '';
+    }
+
+    async function submitFeedback(){
+      const comment = document.getElementById('feedbackText').value.trim();
+      const payload = { source: _feedbackSource, rating: _feedbackRating, comment, thread_id: getActiveConversation()?.threadId || null };
+      closeFeedbackModal();
+      try{
+        const res = await fetch(SR_FEEDBACK_URL, { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body:JSON.stringify(payload) });
+        const json = await res.json().catch(() => null);
+        if(!res.ok || (json && json.ok === false)) throw new Error((json && (json.error || json.message)) || 'Geri bildirim gönderilemedi');
+        showToast('Geri bildiriminiz için teşekkürler!', 'success');
+      }catch(e){
+        showToast(e.message || 'Geri bildirim gönderilemedi', 'error');
+      }
+    }
+
+    // Yıldız hover ve tıklama
+    document.getElementById('starRow').addEventListener('mouseover', e => {
+      const btn = e.target.closest('.star-btn'); if(!btn) return;
+      const hov = Number(btn.dataset.val);
+      document.querySelectorAll('.star-btn').forEach(b => {
+        b.classList.toggle('active', Number(b.dataset.val) <= hov);
+      });
+      document.getElementById('starLabel').textContent = STAR_LABELS[hov] || '';
+    });
+    document.getElementById('starRow').addEventListener('mouseleave', () => {
+      _setRating(_feedbackRating); // restore seçili rating
+    });
+    document.getElementById('starRow').addEventListener('click', e => {
+      const btn = e.target.closest('.star-btn'); if(!btn) return;
+      _setRating(Number(btn.dataset.val));
+    });
+
+    document.getElementById('feedbackClose').addEventListener('click', closeFeedbackModal);
+    document.getElementById('feedbackSkip').addEventListener('click', closeFeedbackModal);
+    document.getElementById('feedbackSubmit').addEventListener('click', submitFeedback);
+    document.getElementById('feedbackOverlay').addEventListener('click', e => {
+      if(e.target === e.currentTarget) closeFeedbackModal();
+    });
+
+    // ===== Toast =====
+    function showToast(message, type = 'info'){
+      const container = document.getElementById('toastContainer');
+      if(!container) return;
+      const toast = document.createElement('div');
+      toast.className = 'toast ' + type;
+      const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
+      toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.animation = 'toastOut .25s forwards';
+        setTimeout(() => toast.remove(), 260);
+      }, 2800);
+    }
+
+    // ===== Typing Indicator =====
+    function showTyping(){
+      if(document.getElementById('typingRow')) return;
+      const row = document.createElement('div');
+      row.className = 'typing-row'; row.id = 'typingRow';
+      const avatar = document.createElement('div');
+      avatar.className = 'typing-avatar'; avatar.innerHTML = '<img src="'+FILOZOF_AVATAR+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+      const bubble = document.createElement('div');
+      bubble.className = 'typing-bubble';
+      for(let i = 0; i < 3; i++){
+        const d = document.createElement('div'); d.className = 'typing-dot'; bubble.appendChild(d);
+      }
+      row.appendChild(avatar); row.appendChild(bubble);
+      chat.appendChild(row); scrollToBottom();
+    }
+    function hideTyping(){
+      document.getElementById('typingRow')?.remove();
+    }
+
+    // ===== Suggestion Cards =====
+    function renderWelcomeScreen(){
+      const suggestions = [
+        { icon:'💡', text:'Nasıl fikir girişi yapabilirim?' },
+        { icon:'🔄', text:'Talebimin süreci nasıl işler?' },
+        { icon:'📋', text:'Olgunlaştırma soruları nelerdir?' },
+      ];
+      const screen = document.createElement('div');
+      screen.className = 'welcome-screen'; screen.id = 'welcomeScreen';
+
+      const avatarEl = document.createElement('div');
+      avatarEl.className = 'welcome-avatar';
+      avatarEl.innerHTML = `<img src="${FILOZOF_AVATAR}" alt="" />`;
+
+      const titleEl = document.createElement('div');
+      titleEl.className = 'welcome-title';
+      titleEl.textContent = 'Filozof';
+
+      const subEl = document.createElement('div');
+      subEl.className = 'welcome-sub';
+      subEl.textContent = 'Fikrini paylaş, birlikte olgunlaştıralım. Sana birkaç kısa soru sorarak değerlendirilebilir bir hale getireceğim.';
+
+      const cardsDiv = document.createElement('div');
+      cardsDiv.className = 'suggestion-row';
+      suggestions.forEach(({ icon, text }) => {
+        const card = document.createElement('button');
+        card.className = 'suggestion-card'; card.type = 'button';
+        card.innerHTML = `<span style="margin-right:6px">${icon}</span>${text}`;
+        card.addEventListener('click', () => {
+          screen.remove(); input.value = text; sendMessage();
+        });
+        cardsDiv.appendChild(card);
+      });
+
+      screen.appendChild(avatarEl);
+      screen.appendChild(titleEl);
+      screen.appendChild(subEl);
+      screen.appendChild(cardsDiv);
+      chat.appendChild(screen);
+    }
+
+    // ===== Calls =====
+    function fmtDate(val){
+      try{
+        const d = new Date(val);
+        if(String(d) === 'Invalid Date') return '';
+        return d.toLocaleString([], { month:'short', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+      }catch(e){ return ''; }
+    }
+
+    function normalizeCallsResponse(json){
+      if(!json) return [];
+      let items = [];
+      if(Array.isArray(json)) items = json;
+      else if(Array.isArray(json.items)) items = json.items;
+      else if(Array.isArray(json.issues)) items = json.issues;
+      else if(Array.isArray(json.data)) items = json.data;
+      return items.map(it => {
+        const key = it.key || it.issueKey || '';
+        const issueId = it.id || it.issueId || '';
+        const summary = (it.summary || it.title || it.name || '').toString();
+        const rawDesc = it.description || it.fields?.description || '';
+        const description = (rawDesc && typeof rawDesc === 'object') ? JSON.stringify(rawDesc) : String(rawDesc || '');
+        const title = (key ? (key + ' – ') : '') + (summary || 'Kayıt');
+        const status = (it.status?.name || it.status || it.state || it.stateName || 'Açık').toString();
+        const time = fmtDate(it.updated || it.updatedAt || it.created || it.createdAt || it.date);
+        const customFields = it.customFields || it.custom_fields || it.custom_fields_list || [];
+        const threadId = it.thread_id || it.threadId || it.thread || it.threadID;
+        return { title, status, time, summary, description, customFields, threadId, issueKey: key, issueId };
+      });
+    }
+
+    let _allCallItems = [];
+    let _activeCallFilter = null; // null = Tümü
+
+    function renderCallsList(items){
+      _allCallItems = items || [];
+      _activeCallFilter = null;
+      _renderFilterTabs();
+      _applyCallsFilter();
+    }
+
+    function _renderFilterTabs(){
+      const wrap = document.getElementById('callsFilterWrap');
+      if(!wrap) return;
+      wrap.innerHTML = '';
+
+      // Veriден gelen benzersiz durum listesi
+      const statuses = [...new Set(_allCallItems.map(it => (it.status || '').toString()).filter(Boolean))];
+
+      // "Tümü" butonu her zaman ilk
+      const all = document.createElement('button');
+      all.className = 'calls-filter-btn' + (_activeCallFilter === null ? ' active' : '');
+      all.type = 'button';
+      all.textContent = `Tümü (${_allCallItems.length})`;
+      all.addEventListener('click', () => { _activeCallFilter = null; _renderFilterTabs(); _applyCallsFilter(); });
+      wrap.appendChild(all);
+
+      statuses.forEach(st => {
+        const count = _allCallItems.filter(it => it.status === st).length;
+        const btn = document.createElement('button');
+        btn.className = 'calls-filter-btn' + (_activeCallFilter === st ? ' active' : '');
+        btn.type = 'button';
+        btn.textContent = `${st} (${count})`;
+        btn.addEventListener('click', () => { _activeCallFilter = st; _renderFilterTabs(); _applyCallsFilter(); });
+        wrap.appendChild(btn);
+      });
+
+      // Filtre yoksa wrap'i gizle
+      wrap.style.display = statuses.length ? '' : 'none';
+    }
+
+    function _applyCallsFilter(){
+      const searchVal = (document.getElementById('callsSearch')?.value || '').trim().toLowerCase();
+      let filtered = _activeCallFilter
+        ? _allCallItems.filter(it => it.status === _activeCallFilter)
+        : _allCallItems;
+      if(searchVal){
+        filtered = filtered.filter(it =>
+          (it.title||'').toLowerCase().includes(searchVal) ||
+          (it.status||'').toLowerCase().includes(searchVal) ||
+          (it.summary||'').toLowerCase().includes(searchVal)
+        );
+      }
+      _renderCallsFiltered(filtered);
+    }
+
+    function _statusClass(statusLower){
+      if(statusLower.includes('draft')) return 's-draft';
+      if(statusLower.includes('açık') || statusLower === 'open' || statusLower.includes('open')) return 's-open';
+      if(statusLower.includes('bekle') || statusLower.includes('wait') || statusLower.includes('pending')) return 's-waiting';
+      if(statusLower.includes('kapandı') || statusLower.includes('closed') || statusLower.includes('done')) return 's-closed';
+      return 's-open';
+    }
+
+    function _renderCallsFiltered(items){
+      callsList.innerHTML = '';
+      if(!items || !items.length){
+        const empty = document.createElement('div');
+        empty.className = 'sr-empty';
+        empty.textContent = 'Gösterilecek fikir yok.';
+        callsList.appendChild(empty);
+        return;
+      }
+      items.forEach(it => {
+        const statusLower = (it.status || '').toString().toLowerCase();
+        const row = document.createElement('div');
+        row.className = 'call-item ' + _statusClass(statusLower);
+
+        const rowTop = document.createElement('div');
+        rowTop.className = 'call-row';
+
+        const title = document.createElement('div');
+        title.className = 'call-title';
+        title.textContent = it.title;
+
+        const actions = document.createElement('div');
+        actions.className = 'call-actions';
+        if(statusLower === 'draft' || statusLower.includes('draft')){
+          const btn = document.createElement('button');
+          btn.className = 'call-action';
+          btn.type = 'button';
+          btn.textContent = 'Olgunlaştır';
+          btn.addEventListener('click', (e) => { e.stopPropagation(); openMatureModal(it); });
+          actions.appendChild(btn);
+        }
+        rowTop.appendChild(title);
+        rowTop.appendChild(actions);
+
+        const meta = document.createElement('div');
+        meta.className = 'call-meta';
+        const tag = document.createElement('span');
+        tag.className = 'call-tag' + (statusLower.includes('draft') ? ' draft' : '');
+        tag.textContent = it.status;
+        const time = document.createElement('span');
+        time.textContent = it.time;
+        meta.appendChild(tag);
+        meta.appendChild(time);
+
+        row.appendChild(rowTop);
+        row.appendChild(meta);
+        callsList.appendChild(row);
+      });
+    }
+
+    async function loadCalls(){
+      callsList.innerHTML = '';
+      const loading = document.createElement('div');
+      loading.className = 'sr-empty';
+      loading.textContent = 'Yükleniyor...';
+      callsList.appendChild(loading);
+      try{
+        const url = new URL(SR_CALLS_URL, location.origin);
+        url.searchParams.set('offset','0');
+        url.searchParams.set('limit','50');
+        const res = await fetch(url.toString(), { credentials:'include' });
+        const json = await res.json().catch(() => null);
+        if(!res.ok || (json && json.ok === false)) throw new Error((json && (json.error || json.message)) || 'Liste alınamadı');
+        renderCallsList(normalizeCallsResponse(json));
+      }catch(e){
+        callsList.innerHTML = '';
+        const empty = document.createElement('div');
+        empty.className = 'sr-empty';
+        empty.textContent = 'Liste alınamadı.';
+        callsList.appendChild(empty);
+      }
+    }
+
+    function openCallsPanel(){
+      callsOverlay.classList.add('open');
+      callsPanel.classList.add('open');
+      callsOverlay.setAttribute('aria-hidden','false');
+      callsPanel.setAttribute('aria-hidden','false');
+      loadCalls();
+    }
+    function closeCallsPanel(){
+      callsOverlay.classList.remove('open');
+      callsPanel.classList.remove('open');
+      callsOverlay.setAttribute('aria-hidden','true');
+      callsPanel.setAttribute('aria-hidden','true');
+    }
+
+    let currentIdeaItem = null;
+    let currentAnswers = [];
+    let currentWarnings = [];
+    let lastMatureKey = null;
+    const matureFormState = {};
+
+    function normalizeChannelList(val){
+      if(!val) return [];
+      if(Array.isArray(val)) return val.flatMap(v => {
+        if(v && typeof v === 'object'){
+          if(Array.isArray(v.values)) return v.values.map(x => String(x));
+          if(v.value) return [String(v.value)];
+          if(v.name) return [String(v.name)];
+          return [];
+        }
+        return [String(v)];
+      });
+      if(typeof val === 'object'){
+        if(Array.isArray(val.values)) return val.values.flatMap(v => {
+          if(v && typeof v === 'object'){ if(v.value) return [String(v.value)]; if(v.name) return [String(v.name)]; return []; }
+          return [String(v)];
+        });
+        if(Array.isArray(val.value)) return val.value.map(v => String(v));
+        if(val.value) return [String(val.value)];
+        if(val.name) return [String(val.name)];
+      }
+      return [String(val)];
+    }
+
+    function hasChannelToken(val, token){
+      const t = (token||'').toLowerCase();
+      if(!t) return false;
+      return normalizeChannelList(val).some(v => v.toLowerCase().includes(t));
+    }
+    function hasMobileChannel(val){ return hasChannelToken(val,'mobil'); }
+    function hasBranchChannel(val){ return hasChannelToken(val,'şube') || hasChannelToken(val,'sube'); }
+
+    function setQuestion4Visibility(channelValue){
+      const q4Item = document.getElementById('q4Item');
+      if(!q4Item) return;
+      const show = hasMobileChannel(channelValue);
+      q4Item.classList.toggle('is-hidden', !show);
+      if(!show){
+        const q4Select = document.getElementById('q5Select');
+        const q4Detail = document.getElementById('q5Detail');
+        if(q4Select) q4Select.value = '';
+        if(q4Detail){ q4Detail.value = ''; q4Detail.classList.remove('open'); }
+      }
+    }
+    function setQuestion7Visibility(channelValue){
+      const q7Item = document.getElementById('q7Item');
+      if(!q7Item) return;
+      const show = hasBranchChannel(channelValue) || hasChannelToken(channelValue,'çağrı merkezi') || hasChannelToken(channelValue,'cagri merkezi');
+      q7Item.classList.toggle('is-hidden', !show);
+      if(!show){ const q7Code = document.getElementById('q7Code'); if(q7Code) q7Code.value = ''; }
+    }
+
+    function captureMatureFormState(key){
+      if(!key) return;
+      const getVal = (id) => document.getElementById(id)?.value || '';
+      let stakeholdersValue = '', stakeholderOpinionsValue = '';
+      if(typeof window.getStakeholdersState === 'function'){
+        const state = window.getStakeholdersState();
+        stakeholdersValue = state.stakeholdersValue || '';
+        stakeholderOpinionsValue = state.stakeholderOpinionsValue || '';
+      } else {
+        stakeholdersValue = getVal('stakeholdersValue');
+        stakeholderOpinionsValue = getVal('stakeholderOpinionsValue');
+      }
+      matureFormState[key] = {
+        stakeholdersValue, stakeholderOpinionsValue,
+        q2Select:getVal('q2Select'), q2Detail:getVal('q2Detail'),
+        q3Select:getVal('q3Select'), q3Detail:getVal('q3Detail'),
+        q5Select:getVal('q5Select'), q5Detail:getVal('q5Detail'),
+        q8Select:getVal('q8Select'), q10Select:getVal('q10Select'),
+        q10Detail:getVal('q10Detail'), q7Code:getVal('q7Code')
+      };
+    }
+
+    function restoreMatureFormState(key){
+      const state = key ? matureFormState[key] : null;
+      if(!state) return false;
+      const setVal = (id, value) => { const el = document.getElementById(id); if(el) el.value = value || ''; };
+      setVal('stakeholdersValue', state.stakeholdersValue);
+      setVal('stakeholderOpinionsValue', state.stakeholderOpinionsValue);
+      setVal('q2Select', state.q2Select); setVal('q2Detail', state.q2Detail);
+      setVal('q3Select', state.q3Select); setVal('q3Detail', state.q3Detail);
+      setVal('q5Select', state.q5Select); setVal('q5Detail', state.q5Detail);
+      setVal('q8Select', state.q8Select); setVal('q10Select', state.q10Select);
+      setVal('q10Detail', state.q10Detail); setVal('q7Code', state.q7Code);
+      if(typeof window.restoreStakeholdersSelection === 'function'){
+        window.restoreStakeholdersSelection(state.stakeholdersValue, state.stakeholderOpinionsValue);
+      }
+      updateNpsWarning();
+      if(typeof window.syncYesNoDetails === 'function') window.syncYesNoDetails();
+      return true;
+    }
+
+    function resetMatureForm(){
+      clearFieldErrors();
+      ['q2Select','q3Select','q5Select','q8Select','q10Select'].forEach(id => {
+        const el = document.getElementById(id); if(el) el.value = '';
+      });
+      ['q2Detail','q3Detail','q5Detail','q10Detail'].forEach(id => {
+        const el = document.getElementById(id); if(el){ el.value = ''; el.classList.remove('open'); }
+      });
+      const file = document.getElementById('q8Attachment');
+      if(file){ file.value = ''; file.classList.remove('open'); }
+      const q7 = document.getElementById('q7Code'); if(q7) q7.value = '';
+      if(typeof window.resetStakeholdersSelection === 'function') window.resetStakeholdersSelection();
+      updateNpsWarning();
+    }
+
+    function openMatureModal(item){
+      const nextKey = item?.issueKey || item?.key || item?.issueId || item?.id || item?.title || '';
+      if(lastMatureKey && lastMatureKey !== nextKey) captureMatureFormState(lastMatureKey);
+      if(!restoreMatureFormState(nextKey)) resetMatureForm();
+      currentIdeaItem = item;
+      lastMatureKey = nextKey || lastMatureKey;
+      matureOverlay.classList.add('open');
+      matureModal.classList.add('open');
+      matureOverlay.setAttribute('aria-hidden','false');
+      matureModal.setAttribute('aria-hidden','false');
+      if(matureTitle) matureTitle.textContent = item?.title || 'Kayıt';
+      if(matureTitleDisplay) matureTitleDisplay.textContent = item?.title || 'Kayıt';
+      if(matureStatus){ matureStatus.textContent = item?.status || 'Durum'; }
+      if(matureTime) matureTime.textContent = item?.time || '';
+      if(matureSummary) matureSummary.textContent = item?.summary || '—';
+      if(matureDescription) matureDescription.textContent = item?.description || '—';
+      const channelValue = item?.customFields?.find(f => f.id === "customfield_10427" || f.name === "Etkilenecek Kanallar")?.value;
+      if(matureChannels) matureChannels.textContent = channelValue || '—';
+      const solutionTypeValue = item?.customFields?.find(f => f.name === "Çözüm Tipi" || f.name === "Solution Type")?.value;
+      if(matureSolutionType) matureSolutionType.textContent = solutionTypeValue || '—';
+      setQuestion4Visibility(channelValue);
+      setQuestion7Visibility(channelValue);
+      ensureAiWarningDivs();
+      clearFieldErrors();
+    }
+
+    function closeMatureModal(){
+      if(lastMatureKey) captureMatureFormState(lastMatureKey);
+      matureOverlay.classList.remove('open');
+      matureModal.classList.remove('open');
+      matureOverlay.setAttribute('aria-hidden','true');
+      matureModal.setAttribute('aria-hidden','true');
+    }
+
+    function prettyOpinions(jsonStr){
+      try{
+        if(!jsonStr) return '';
+        const obj = JSON.parse(jsonStr);
+        if(!obj || typeof obj !== 'object') return '';
+        const keys = Object.keys(obj);
+        if(!keys.length) return '';
+        const lines = keys.sort((a,b) => a.localeCompare(b,"tr"))
+          .map(k => (k + ': ' + (obj[k]||'').trim()))
+          .filter(line => line.trim() !== (line.split(':')[0]+':').trim());
+        return lines.join('\n');
+      }catch(e){ return jsonStr; }
+    }
+
+    const REQUIRED_NPS_UNIT = 'Müşteri Deneyimi Yönetimi';
+    function getSelectedStakeholders(){
+      const stVal = (document.getElementById('stakeholdersValue')?.value || '').trim();
+      if(!stVal) return [];
+      return stVal.split(',').map(s => s.trim()).filter(Boolean);
+    }
+    function hasRequiredNpsUnit(){ return getSelectedStakeholders().includes(REQUIRED_NPS_UNIT); }
+
+    function collectAnswers(){
+      const answers = [];
+      document.querySelectorAll('.question-grid .q-item').forEach(item => {
+        const label = item.querySelector('label')?.textContent?.trim() || '';
+        if(!label || item.classList.contains('is-hidden')) return;
+        if(item.id === 'qStakeholders'){
+          const st = (document.getElementById('stakeholdersValue')?.value || '').trim();
+          const opJson = (document.getElementById('stakeholderOpinionsValue')?.value || '').trim();
+          answers.push({ label:'Paydaşlar', value: st || '—' });
+          const pretty = prettyOpinions(opJson);
+          if(pretty) answers.push({ label:'Paydaş Görüşleri', value: pretty });
+          else if(opJson && opJson !== "{}") answers.push({ label:'Paydaş Görüşleri (JSON)', value: opJson });
+          return;
+        }
+        const inputEl = item.querySelector('textarea, select, input');
+        if(!inputEl) return;
+        const isFileInput = inputEl.type === 'file';
+        const value = isFileInput ? '' : (inputEl.value || '').trim();
+        if(value) answers.push({ label, value });
+        const detail = item.querySelector('.q-detail');
+        if(detail && detail.classList.contains('open')){
+          let dv = '';
+          if(detail.type === 'file'){ const f = detail.files && detail.files[0]; dv = f ? f.name : ''; }
+          else { dv = (detail.value || '').trim(); }
+          if(dv) answers.push({ label: label + ' (Detay)', value: dv });
+        }
+      });
+      return answers;
+    }
+
+    function buildApproveForm(){
+      return {
+        stakeholders: document.getElementById('stakeholdersValue')?.value || '',
+        stakeholderOpinions: document.getElementById('stakeholderOpinionsValue')?.value || '',
+        q2: document.getElementById('q2Select')?.value || '',
+        q2Detail: document.getElementById('q2Detail')?.value || '',
+        q3: document.getElementById('q3Select')?.value || '',
+        q3Detail: document.getElementById('q3Detail')?.value || '',
+        q4: document.getElementById('q5Select')?.value || '',
+        q4Detail: document.getElementById('q5Detail')?.value || '',
+        q4Attachment: (document.getElementById('q5Attachment')?.files?.[0]?.name) || '',
+        q5: document.getElementById('q8Select')?.value || '',
+        q5Attachment: (document.getElementById('q8Attachment')?.files?.[0]?.name) || '',
+        q6: document.getElementById('q10Select')?.value || '',
+        q6Detail: document.getElementById('q10Detail')?.value || '',
+        q7Code: document.getElementById('q7Code')?.value || ''
+      };
+    }
+
+    function buildApprovePayload(item, answers){
+      return {
+        issueKey: item?.issueKey || item?.key || '',
+        issueId: item?.issueId || '',
+        threadId: item?.threadId || null,
+        form: buildApproveForm(),
+        answers: answers || []
+      };
+    }
+
+    function clearFieldErrors(){
+      document.querySelectorAll('.q-input.error, .ms-control.error, .op-text.error')
+        .forEach(el => el.classList.remove('error'));
+      clearAiWarnings();
+    }
+
+    function ensureAiWarningDivs(){
+      const q2Warn = document.getElementById('q2Warn');
+      if(q2Warn && !document.getElementById('q2AiWarn')){
+        const q2AiWarn = document.createElement('div');
+        q2AiWarn.className = 'q-warn'; q2AiWarn.id = 'q2AiWarn'; q2AiWarn.style.display = 'none';
+        q2Warn.parentNode.insertBefore(q2AiWarn, q2Warn.nextSibling);
+      }
+    }
+
+    function updateNpsWarning(){
+      const q2Select = document.getElementById('q2Select');
+      const q2Warn = document.getElementById('q2Warn');
+      if(!q2Select || !q2Warn) return;
+      const isYes = q2Select.value === 'Evet';
+      const show = isYes && !hasRequiredNpsUnit();
+      q2Warn.classList.toggle('open', show);
+    }
+
+    function isAffirmative(val){ return val === 'Evet' || val === 'Var'; }
+
+    function validateMatureForm(){
+      let ok = true;
+      clearFieldErrors();
+      function markError(el){ if(!el) return; el.classList.add('error'); ok = false; }
+      function isHidden(el){ return !!el?.closest('.q-item')?.classList.contains('is-hidden'); }
+
+      const msControl = document.getElementById('msControl');
+      const stVal = (document.getElementById('stakeholdersValue')?.value || '').trim();
+      const opinionTextareas = Array.from(document.querySelectorAll('#stakeholderOpinions .op-text'));
+      if(stVal && opinionTextareas.length === 0) markError(msControl);
+      if(stVal) opinionTextareas.forEach(ta => { if(!(ta.value||'').trim()) markError(ta); });
+      if(document.getElementById('q2Select')?.value === 'Evet' && !hasRequiredNpsUnit()){ markError(msControl); updateNpsWarning(); }
+
+      function requireSelect(id){ const el = document.getElementById(id); if(isHidden(el)) return; if(el && !el.value) markError(el); }
+      function requireDetail(selectId, detailId){
+        const sel = document.getElementById(selectId), detail = document.getElementById(detailId);
+        if(!sel || !detail || isHidden(sel) || isHidden(detail)) return;
+        if(!sel.value){ markError(sel); return; }
+        if(isAffirmative(sel.value) && !(detail.value||'').trim()) markError(detail);
+      }
+      function requireText(id){ const el = document.getElementById(id); if(!el || isHidden(el)) return; if(!(el.value||'').trim()) markError(el); }
+      function requireAttachment(selectId, fileId){
+        const sel = document.getElementById(selectId), file = document.getElementById(fileId);
+        if(!sel || !file || isHidden(sel) || isHidden(file)) return;
+        if(!sel.value){ markError(sel); return; }
+        if(sel.value === 'Evet' && (!file.files || !file.files.length)) markError(file);
+      }
+
+      requireDetail('q2Select','q2Detail');
+      requireDetail('q3Select','q3Detail');
+      const q5Sel = document.getElementById('q5Select'), q5Det = document.getElementById('q5Detail');
+      if(q5Sel && q5Det){
+        if(!isHidden(q5Sel)){
+          if(!q5Sel.value) markError(q5Sel);
+          else if(q5Sel.value === 'Var' && !(q5Det.value||'').trim()) markError(q5Det);
+        }
+      }
+      requireAttachment('q8Select','q8Attachment');
+      requireDetail('q10Select','q10Detail');
+      requireText('q7Code');
+      if(!ok) alert('Lütfen tüm zorunlu alanları doldurun.');
+      return ok;
+    }
+
+    function findWarningForField(fieldId, impactKey){
+      if(!currentWarnings || !Array.isArray(currentWarnings)) return null;
+      if(fieldId){ const byField = currentWarnings.find(w => w.fieldId === fieldId); if(byField) return byField; }
+      if(impactKey){ const byImpact = currentWarnings.find(w => w.impactKey === impactKey); if(byImpact) return byImpact; }
+      return null;
+    }
+
+    function renderWarningIcon(warning, uniqueId){
+      if(!warning) return null;
+      const isError = warning.level === 'error';
+      const color = isError ? '#DE350B' : '#FF8B00';
+      const icon = isError ? '⚠️' : '⚡';
+      const confidence = warning.confidence ? Math.round(warning.confidence*100) : 0;
+      const tooltipId = `warning-tooltip-${uniqueId}`;
+      const iconEl = document.createElement('span');
+      iconEl.style.cssText = `display:inline-block;margin-left:6px;cursor:help;font-size:15px;vertical-align:middle;position:relative;`;
+      iconEl.textContent = icon;
+      const tooltipEl = document.createElement('div');
+      tooltipEl.id = tooltipId;
+      tooltipEl.style.cssText = `position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:8px;padding:10px 12px;border-radius:${getComputedStyle(document.documentElement).getPropertyValue('--radius-md')};background:#fff;border:1px solid ${color};box-shadow:0 4px 12px rgba(0,0,0,.15);font-size:12px;line-height:1.5;color:#333;white-space:pre-wrap;max-width:320px;min-width:180px;z-index:10000;display:none;pointer-events:none;`;
+      const header = document.createElement('div');
+      header.style.cssText = `font-weight:700;color:${color};margin-bottom:4px;`;
+      header.textContent = `${isError ? 'Hata' : 'Uyarı'}${confidence > 0 ? ` (${confidence}% güven)` : ''}`;
+      const message = document.createElement('div');
+      message.style.cssText = `color:#42526E;white-space:pre-wrap;`;
+      message.textContent = warning.message || '';
+      tooltipEl.appendChild(header);
+      tooltipEl.appendChild(message);
+      iconEl.addEventListener('mouseenter', () => tooltipEl.style.display = 'block');
+      iconEl.addEventListener('mouseleave', () => tooltipEl.style.display = 'none');
+      const container = document.createElement('span');
+      container.style.cssText = 'position:relative;display:inline-block;';
+      container.appendChild(iconEl);
+      container.appendChild(tooltipEl);
+      return container;
+    }
+
+    function renderPreview(item, answers){
+      if(previewTitle) previewTitle.textContent = item?.title || 'Kayıt';
+      if(previewSummary) previewSummary.textContent = item?.summary || '—';
+      if(previewDescription) previewDescription.textContent = item?.description || '—';
+
+      const LABEL_TO_FIELD_ID = {
+        'Bu talep için NPS ölçümü var mı? Varsa hangi noktalarda yapılacak?': 'customfield_10722',
+        'Müşteriye yansıyan ekranlarda ekleme veya bir değişiklik var mı?': 'customfield_16503',
+        'Kullanıcı davranışları Countly vs bir araçla analiz edilecek mi? Var ise detayı': 'customfield_12118',
+        'Dış parti bir sistemle entegrasyon isteniyor mu? Evet ise Gizlilik Taahhüdü alındı mı?': 'customfield_10927',
+        'Bu taleple ilgili raporlama/dashboard ihtiyacınız var mı? Varsa detay yazınız.': 'customfield_10930'
+      };
+      const IMPACT_TO_FIELD_ID = {
+        nps_required: 'customfield_10722', ui_required: 'customfield_16503',
+        countly_required: 'customfield_12118', external_integration_required: 'customfield_10927',
+        reporting_required: 'customfield_10930'
+      };
+
+      if(previewCustomFields){
+        previewCustomFields.innerHTML = '';
+        const list = item?.customFields || [];
+        if(!list.length){
+          const empty = document.createElement('div'); empty.className = 'preview-answer'; empty.textContent = 'Özel alan yok.';
+          previewCustomFields.appendChild(empty);
+        } else {
+          list.forEach((cf, idx) => {
+            const row = document.createElement('div');
+            const cfId = cf.id || '';
+            const warning = findWarningForField(cfId, null);
+            row.className = warning ? (warning.level === 'error' ? 'preview-answer has-error' : 'preview-answer has-warning') : 'preview-answer';
+            const content = document.createElement('div'); content.style.display = 'inline';
+            content.appendChild(document.createTextNode((cf.name||'Alan')+': '+(cf.value||'—')));
+            if(warning){ const ic = renderWarningIcon(warning, `cf-${idx}`); if(ic) content.appendChild(ic); }
+            row.appendChild(content); previewCustomFields.appendChild(row);
+          });
+        }
+      }
+
+      if(previewAnswers){
+        previewAnswers.innerHTML = '';
+        if(!answers.length){
+          const empty = document.createElement('div'); empty.className = 'preview-answer'; empty.textContent = 'Yanıt yok.';
+          previewAnswers.appendChild(empty);
+        } else {
+          answers.forEach((a, idx) => {
+            const row = document.createElement('div');
+            const fieldId = LABEL_TO_FIELD_ID[a.label] || null;
+            const impactKey = fieldId ? Object.keys(IMPACT_TO_FIELD_ID).find(k => IMPACT_TO_FIELD_ID[k] === fieldId) : null;
+            const warning = (fieldId || impactKey) ? findWarningForField(fieldId, impactKey) : null;
+            row.className = warning ? (warning.level === 'error' ? 'preview-answer has-error' : 'preview-answer has-warning') : 'preview-answer';
+            const content = document.createElement('div'); content.style.whiteSpace = 'pre-wrap';
+            const labelSpan = document.createElement('span'); labelSpan.style.fontWeight = '600';
+            labelSpan.textContent = a.label;
+            if(warning){ const ic = renderWarningIcon(warning, `ans-${idx}`); if(ic) labelSpan.appendChild(ic); }
+            content.appendChild(labelSpan);
+            content.appendChild(document.createTextNode('\n' + a.value));
+            row.appendChild(content); previewAnswers.appendChild(row);
+          });
+        }
+      }
+
+      const previewAiWarningInfo = document.getElementById('previewAiWarningInfo');
+      if(previewAiWarningInfo){
+        if(currentWarnings && currentWarnings.length > 0){
+          previewAiWarningInfo.style.display = 'block';
+          try { previewAiWarningInfo.scrollIntoView({ behavior:'smooth', block:'start' }); } catch(e) {}
+          previewAiWarningInfo.classList.add('flash');
+          setTimeout(() => previewAiWarningInfo.classList.remove('flash'), 2000);
+        } else {
+          previewAiWarningInfo.style.display = 'none';
+        }
+      }
+    }
+
+    function openPreviewModal(){
+      if(!validateMatureForm()) return;
+      currentAnswers = collectAnswers();
+      currentWarnings = [];
+      clearPreviewWarnings();
+      renderPreview(currentIdeaItem, currentAnswers);
+      const key = currentIdeaItem
+        ? (currentIdeaItem.issueKey || currentIdeaItem.key || currentIdeaItem.issueId || currentIdeaItem.id || currentIdeaItem.title || '')
+        : lastMatureKey;
+      if(key){ captureMatureFormState(key); lastMatureKey = key; }
+      if(btnPreview && document.activeElement === btnPreview) btnPreview.blur();
+      matureOverlay.classList.remove('open'); matureModal.classList.remove('open');
+      matureOverlay.setAttribute('aria-hidden','true'); matureModal.setAttribute('aria-hidden','true');
+      previewOverlay.classList.add('open'); previewModal.classList.add('open');
+      previewOverlay.setAttribute('aria-hidden','false'); previewModal.setAttribute('aria-hidden','false');
+      setTimeout(() => { const pc = document.getElementById('previewClose'); if(pc) pc.focus(); }, 100);
+    }
+
+    function closePreviewModal(){
+      previewOverlay.classList.remove('open'); previewModal.classList.remove('open');
+      previewOverlay.setAttribute('aria-hidden','true'); previewModal.setAttribute('aria-hidden','true');
+    }
+
+    function buildUpdatePrompt(item, answers){
+      const lines = [];
+      lines.push('Kayıt bilgileri');
+      if(item?.title) lines.push('• Başlık: ' + item.title);
+      if(item?.summary) lines.push('• Özet: ' + item.summary);
+      if(item?.description) lines.push('• Açıklama: ' + item.description);
+      if(item?.customFields?.length){ lines.push(''); lines.push('Fikir Detayları'); item.customFields.forEach(cf => lines.push('• ' + (cf.name||'Alan') + ': ' + (cf.value||'—'))); }
+      lines.push(''); lines.push('Neyi güncellemek istersin?');
+      return lines.join('\n');
+    }
+
+    function buildPreviewMessage(item, answers){
+      const lines = [];
+      lines.push('Önizleme');
+      if(item?.title) lines.push('Başlık: ' + item.title);
+      if(item?.summary) lines.push('Özet: ' + item.summary);
+      if(item?.description) lines.push('Açıklama: ' + item.description);
+      if(item?.customFields?.length){ lines.push('Custom Alanlar:'); item.customFields.forEach(cf => lines.push('- '+(cf.name||'Alan')+': '+(cf.value||'—'))); }
+      if(answers?.length){ lines.push('Sorular:'); answers.forEach(a => lines.push(a.label+'\n'+a.value)); }
+      return lines.join('\n');
+    }
+
+    async function openChatForThread(item, answers, options){
+      const threadId = item?.threadId;
+      if(!threadId){ alert('Bu kayıt için thread id bulunamadı.'); return; }
+      let convo = conversations.find(c => c.id === threadId);
+      if(!convo){
+        convo = { id:threadId, threadId, title:item?.title||'Sohbet', createdAt:nowMs(), updatedAt:nowMs(), messages:[] };
+        conversations.unshift(convo);
+      }
+      activeConversationId = convo.id;
+      saveState(); renderConversationList();
+      await ensureMessagesLoaded(convo);
+      renderChat();
+      closeCallsPanel(); closeMatureModal(); closePreviewModal();
+      const mode = options?.mode || '';
+      if(mode === 'update'){
+        input.value = 'Güncelleme yapmak istiyorum';
+        sendMessage();
+      }
+    }
+
+    async function uploadAttachment(issueIdOrKey, file){
+      const baseOrigin = (location.origin && location.origin !== 'null') ? location.origin : '';
+      if(!baseOrigin) throw new Error('Dosya yükleme yalnızca Jira ortamında yapılabilir.');
+      const url = new URL('/jira/rest/api/2/issue/' + encodeURIComponent(issueIdOrKey) + '/attachments', baseOrigin);
+      const formData = new FormData();
+      formData.append('file', file, file.name);
+      const res = await fetch(url.toString(), { method:'POST', headers:{'X-Atlassian-Token':'no-check'}, credentials:'include', body:formData });
+      if(!res.ok){ const t = await res.text().catch(() => res.statusText); throw new Error('Attachment yüklenemedi ('+res.status+'): '+(t||res.statusText)); }
+    }
+
+    function clearAiWarnings(){
+      ['q2AiWarn','q3AiWarn','q4AiWarn','q5AiWarn','q6AiWarn'].forEach(id => {
+        const el = document.getElementById(id); if(el){ el.style.display='none'; el.textContent=''; }
+      });
+    }
+
+    function showAiWarning(fieldId, message){
+      const FIELD_TO_WARN_ID = {
+        'customfield_10722':'q2AiWarn','customfield_16503':'q3AiWarn',
+        'customfield_12118':'q4AiWarn','customfield_10927':'q5AiWarn','customfield_10930':'q6AiWarn'
+      };
+      const warnId = FIELD_TO_WARN_ID[fieldId]; if(!warnId) return;
+      const warnEl = document.getElementById(warnId);
+      if(warnEl){ warnEl.textContent = message||''; warnEl.style.display = message ? 'block' : 'none'; }
+    }
+
+    function showPreviewWarnings(warnings, summary){
+      const previewWarningsSection = document.getElementById('previewWarningsSection');
+      const previewWarnings = document.getElementById('previewWarnings');
+      if(!previewWarningsSection || !previewWarnings) return;
+      if(!warnings || warnings.length === 0){ previewWarningsSection.style.display='none'; previewWarnings.innerHTML=''; return; }
+      const FIELD_TO_LABEL = { 'customfield_10722':'NPS Ölçümü','customfield_16503':'Müşteriye Yansıyan Ekranlar','customfield_12118':'Kullanıcı Davranışları Analizi','customfield_10927':'Dış Parti Entegrasyon','customfield_10930':'Raporlama/Dashboard' };
+      let html = '';
+      if(summary) html += `<div style="margin-bottom:12px;padding:10px;background:rgba(222,53,11,.08);border-radius:4px;color:#DE350B;font-weight:600;">${summary}</div>`;
+      warnings.forEach(w => {
+        const fieldLabel = FIELD_TO_LABEL[w.fieldId] || w.fieldId || 'Bilinmeyen Alan';
+        html += `<div style="margin-bottom:10px;padding:10px;background:rgba(222,53,11,.05);border-left:3px solid ${w.level==='error'?'#DE350B':'#FF8B00'};border-radius:3px;">`;
+        html += `<div style="font-weight:700;margin-bottom:4px;color:#DE350B;">${fieldLabel}</div>`;
+        html += `<div style="font-size:13px;line-height:1.5;color:#42526E;white-space:pre-wrap;">${w.message||''}</div></div>`;
+      });
+      previewWarnings.innerHTML = html;
+      previewWarningsSection.style.display = 'block';
+    }
+
+    function clearPreviewWarnings(){
+      const s = document.getElementById('previewWarningsSection'); if(s) s.style.display='none';
+      const p = document.getElementById('previewWarnings'); if(p) p.innerHTML='';
+      const a = document.getElementById('previewAiWarningInfo'); if(a) a.style.display='none';
+    }
+
+    async function approveIdea(){
+      if(!currentIdeaItem){ alert('Kayıt seçilemedi.'); return; }
+      const issueKey = currentIdeaItem.issueKey || currentIdeaItem.key || '';
+      if(!issueKey && !currentIdeaItem.issueId){ alert('Issue bilgisi bulunamadı.'); return; }
+      clearAiWarnings();
+      const payload = buildApprovePayload(currentIdeaItem, currentAnswers);
+      const skipValidation = (currentWarnings && currentWarnings.length > 0);
+      if(skipValidation) payload.skipValidation = true;
+      const keyOrId = issueKey || currentIdeaItem.issueId;
+      if(!keyOrId){ alert('Issue bilgisi bulunamadı.'); return; }
+      const countlyFile = document.getElementById('q5Attachment')?.files?.[0];
+      if(countlyFile) await uploadAttachment(keyOrId, countlyFile);
+      const attachmentFile = document.getElementById('q8Attachment')?.files?.[0];
+      if(attachmentFile) await uploadAttachment(keyOrId, attachmentFile);
+      const originalText = btnApprove.textContent;
+      btnApprove.disabled = true;
+      btnApprove.textContent = 'Gönderiliyor...';
+      try{
+        const res = await fetch(SR_APPROVE_URL, { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body:JSON.stringify(payload) });
+        const responseText = await res.text().catch(() => '');
+        let json = null;
+        try{ json = responseText ? JSON.parse(responseText) : null; }catch(e){}
+        if(!res.ok || (json && json.ok === false)){
+          if(json && json.warnings && Array.isArray(json.warnings) && json.warnings.length > 0){
+            currentWarnings = json.warnings;
+            renderPreview(currentIdeaItem, currentAnswers);
+            const IMPACT_TO_FIELD_ID = { nps_required:'customfield_10722',ui_required:'customfield_16503',countly_required:'customfield_12118',external_integration_required:'customfield_10927',reporting_required:'customfield_10930' };
+            const fieldMessages = {};
+            json.warnings.forEach(w => {
+              if(!w || !w.message) return;
+              let targetFieldId = null;
+              if(w.fieldId && ['customfield_10722','customfield_16503','customfield_12118','customfield_10927','customfield_10930'].includes(w.fieldId)) targetFieldId = w.fieldId;
+              else if(w.impactKey && IMPACT_TO_FIELD_ID[w.impactKey]) targetFieldId = IMPACT_TO_FIELD_ID[w.impactKey];
+              if(!targetFieldId) return;
+              if(!fieldMessages[targetFieldId]) fieldMessages[targetFieldId] = [];
+              fieldMessages[targetFieldId].push(w.message);
+            });
+            Object.keys(fieldMessages).forEach(fid => showAiWarning(fid, fieldMessages[fid].join('\n\n')));
+            btnApprove.disabled = false; btnApprove.textContent = originalText; return;
+          }
+          let errMsg = 'İşlem başarısız';
+          if(json){ if(json.error) errMsg = typeof json.error === 'string' ? json.error : JSON.stringify(json.error); else if(json.message) errMsg = json.message; }
+          alert('Gönderim hatası:\n' + errMsg);
+          throw new Error(errMsg);
+        }
+        currentWarnings = [];
+        closePreviewModal();
+        loadCalls();
+        setTimeout(() => openFeedbackModal('form'), 400);
+      }catch(e){
+        const errMsg = e && e.message ? e.message : String(e);
+        if(!errMsg.includes('Gönderim hatası:')) alert('Gönderim hatası: ' + errMsg);
+      }finally{
+        btnApprove.disabled = false;
+        btnApprove.textContent = originalText;
+      }
+    }
+
+    window.openCallsPanel = openCallsPanel;
+    window.closeCallsPanel = closeCallsPanel;
+    window.openMatureModal = openMatureModal;
+    window.closeMatureModal = closeMatureModal;
+
+    // ===== Storage =====
+    function saveState(){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ conversations, activeConversationId }));
+    }
+    function loadState(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(!raw) return false;
+        const parsed = JSON.parse(raw);
+        conversations = Array.isArray(parsed.conversations) ? parsed.conversations : [];
+        activeConversationId = parsed.activeConversationId || (conversations[0]?.id ?? null);
+        return true;
+      }catch(e){ return false; }
+    }
+
+    function getActiveConversation(){ return conversations.find(c => c.id === activeConversationId) || null; }
+    function ensureActiveExists(){
+      if(!conversations.length){ createConversation(); return; }
+      if(!conversations.some(c => c.id === activeConversationId)) activeConversationId = conversations[0].id;
+    }
+    function findDraftConversation(){ return conversations.find(c => String(c.id||'').startsWith('c_') && (c.messages?.length||0) === 0) || null; }
+    function ensureGreeting(convo){
+      if(!convo || !String(convo.id||'').startsWith('c_')) return;
+      if((convo.messages?.length||0) > 0) return;
+      addMessage(WELCOME_MESSAGE, 'assistant');
+    }
+    function openDraftConversation(){
+      const draft = findDraftConversation();
+      if(draft){ activeConversationId = draft.id; saveState(); renderConversationList(); renderChat(); ensureGreeting(draft); return; }
+      createConversation();
+    }
+
+    // ===== Grouping =====
+    function groupLabelFor(ts){
+      const n = new Date(), today = startOfDayMs(n), yesterday = today - 86400000, prev7 = today - 7*86400000;
+      if(ts >= today) return 'Today';
+      if(ts >= yesterday) return 'Yesterday';
+      if(ts >= prev7) return 'Previous 7 days';
+      return 'Older';
+    }
+    function groupedConversations(){
+      const sorted = [...conversations]
+        .filter(c => {
+          // Backend conversations (non-local) always show — messages are lazy-loaded
+          if(!String(c.id||'').startsWith('c_')) return true;
+          // Local conversations: hide if no user message yet (empty draft)
+          return c.messages?.some(m => m.role === 'user');
+        })
+        .sort((a,b) => (b.updatedAt||b.createdAt) - (a.updatedAt||a.createdAt));
+      const buckets = { 'Today':[], 'Yesterday':[], 'Previous 7 days':[], 'Older':[] };
+      sorted.forEach(c => buckets[groupLabelFor(c.updatedAt||c.createdAt||0)].push(c));
+      return buckets;
+    }
+
+    // ===== Backend =====
+    async function loadThreadsFromBackend(){
+      try{
+        const res = await fetch(SR_THREADS_URL+'?offset=0&limit=50', { credentials:'include' });
+        const json = await res.json();
+        if(!res.ok || json.ok === false) return;
+        const items = json.items || [];
+        const localOnly = conversations.filter(c => String(c.id||'').startsWith('c_'));
+        const backendConvs = items.map(t => {
+          const existing = conversations.find(c => c.id === t.thread_id) || {};
+          const ts = t.last_message_at ? Date.parse(t.last_message_at) : Date.now();
+          return { id:t.thread_id, threadId:t.thread_id, title:t.title||'Sohbet', createdAt:existing.createdAt||ts, updatedAt:ts, lastSnippet:t.last_snippet||'', messages:existing.messages||[] };
+        });
+        conversations = [...localOnly, ...backendConvs];
+        if(!activeConversationId && conversations.length) activeConversationId = conversations[0].id;
+        renderConversationList();
+      }catch(e){ console.warn('loadThreadsFromBackend error', e); }
+    }
+
+    async function ensureMessagesLoaded(convo){
+      if(!convo || convo.messages?.length || String(convo.id||'').startsWith('c_')) return;
+      try{
+        const res = await fetch(SR_MESSAGES_URL+'/'+encodeURIComponent(convo.id)+'/messages?offset=0&limit=200', { credentials:'include' });
+        const json = await res.json();
+        if(!res.ok || json.ok === false) return;
+        convo.messages = json.items.slice().reverse().map((m,i) => ({
+          role: m.role === 'assistant' ? 'assistant' : 'user', text: m.content||'', mid: convo.id+'_'+(m.id||i)
+        }));
+      }catch(e){ console.warn('ensureMessagesLoaded error', e); }
+    }
+
+    // ===== Render Sidebar =====
+    function renderConversationList(){
+      conversationListEl.innerHTML = '';
+      const buckets = groupedConversations();
+      const order = ['Today','Yesterday','Previous 7 days','Older'];
+      const hasAny = order.some(l => buckets[l]?.length);
+      if(!hasAny){
+        const empty = document.createElement('div');
+        empty.className = 'sb-empty';
+        empty.textContent = 'Henüz sohbet yok.\nYeni bir fikri paylaşmaya başla.';
+        conversationListEl.appendChild(empty); return;
+      }
+      order.forEach(label => {
+        const items = buckets[label];
+        if(!items || !items.length) return;
+        const group = document.createElement('div'); group.className = 'conv-group';
+        const title = document.createElement('div'); title.className = 'conv-group-title'; title.textContent = label;
+        group.appendChild(title);
+        items.forEach(c => {
+          const row = document.createElement('div');
+          row.className = 'conv-item' + (c.id === activeConversationId ? ' active' : '');
+          row.dataset.convoId = c.id;
+
+          // Info wrapper with title + snippet
+          const info = document.createElement('div'); info.className = 'conv-info';
+          const t = document.createElement('div'); t.className = 'conv-title'; t.title = c.title||'Yeni Sohbet'; t.textContent = c.title||'Yeni Sohbet';
+          info.appendChild(t);
+          const lastUserMsg = [...(c.messages||[])].reverse().find(m => m.role === 'user');
+          if(lastUserMsg){
+            const snip = document.createElement('div'); snip.className = 'conv-snippet';
+            snip.textContent = (lastUserMsg.text||'').replace(/\s+/g,' ').slice(0,48);
+            info.appendChild(snip);
+          }
+
+          const more = document.createElement('button'); more.className = 'conv-more'; more.type = 'button'; more.title = 'Diğer'; more.textContent = '⋯';
+          row.addEventListener('click', async () => {
+            activeConversationId = c.id; saveState(); renderConversationList();
+            await ensureMessagesLoaded(c); renderChat();
+          });
+          more.addEventListener('click', (e) => { e.stopPropagation(); openContextMenu(e.clientX, e.clientY, c.id); });
+          row.appendChild(info); row.appendChild(more); group.appendChild(row);
+        });
+        conversationListEl.appendChild(group);
+      });
+    }
+
+    // ===== Render Chat =====
+    function renderChat(){
+      chat.innerHTML = '';
+      const convo = getActiveConversation();
+      if(!convo) return;
+      // Fresh conversation: show full welcome screen instead of a bubble
+      if(convo.messages.length === 1 && convo.messages[0].role === 'assistant'){
+        renderWelcomeScreen();
+        return;
+      }
+      convo.messages.forEach(m => addMessageToDom(m.text, m.role, m.mid));
+      scrollToBottom();
+    }
+    /**
+     * extractExamples(rawText)
+     * ─────────────────────────
+     * Parses AI responses that use the structured [Örnek]: marker format.
+     *
+     * Expected AI output format:
+     *   Açıklama paragrafı burada yer alır.
+     *
+     *   [Örnek]: İlk örnek cümle.
+     *   [Örnek]: İkinci örnek cümle.
+     *
+     * Returns { mainText, examples }:
+     *   mainText  – text with all [Örnek]: lines removed and whitespace collapsed
+     *   examples  – array of example strings (in order of appearance)
+     *
+     * Fallback: if no [Örnek]: lines found, returns the full text as mainText
+     * with an empty examples array — so normal messages are unaffected.
+     */
+    function extractExamples(rawText) {
+      const examples = [];
+
+      // Primary: structured [Örnek]: marker (one example per line)
+      const MARKER_RE = /^\[Örnek\]:\s*(.+)$/gim;
+
+      const mainText = rawText
+        .replace(MARKER_RE, (_, content) => {
+          const trimmed = content.trim();
+          if (trimmed) examples.push(trimmed);
+          return ''; // remove from main text
+        })
+        .replace(/\n{3,}/g, '\n\n') // collapse extra blank lines left behind
+        .trim();
+
+      return { mainText, examples };
+    }
+
+    function addMessageToDom(text, role, mid){
+      const isUser = role === 'user';
+
+      // Determine grouping: check last real message row
+      const prevRow = chat.querySelector('.row:last-child');
+      const prevRole = prevRow ? (prevRow.classList.contains('user') ? 'user' : 'assistant') : null;
+      const isGrouped = prevRole === role;
+
+      // Spacer between turns (replaces time-divider)
+      if(!isGrouped && prevRow){
+        const spacer = document.createElement('div');
+        spacer.className = 'turn-spacer';
+        chat.appendChild(spacer);
+      }
+
+      const row = document.createElement('div');
+      const classes = ['row', isUser ? 'user' : '', isGrouped ? 'grouped' : 'group-start']
+        .filter(Boolean).join(' ');
+      row.className = classes;
+      if(mid) row.dataset.mid = mid;
+
+      // Avatar
+      const avatar = document.createElement('div');
+      avatar.className = 'msg-avatar ' + role;
+      if(isUser){
+        avatar.textContent = getUserInitials();
+        if(_jiraUser?.avatarUrl){
+          avatar.innerHTML = `<img src="${_jiraUser.avatarUrl}" alt="" />`;
+        }
+      }else{
+        avatar.innerHTML = `<img src="${FILOZOF_AVATAR}" alt="" />`;
+      }
+
+      // Wrap: bubble + timestamp + actions
+      const wrap = document.createElement('div');
+      wrap.className = 'msg-wrap';
+
+      // For assistant: extract examples before rendering
+      let mainText = text;
+      let examples = [];
+      if(!isUser){
+        ({ mainText, examples } = extractExamples(text));
+      }
+
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble ' + role;
+      if(isUser){
+        bubble.textContent = text;
+      } else {
+        bubble.innerHTML = renderMarkdown(mainText);
+      }
+
+      const ts = document.createElement('div');
+      ts.className = 'msg-ts';
+      ts.textContent = new Date().toLocaleTimeString('tr', { hour:'2-digit', minute:'2-digit' });
+
+      const actions = document.createElement('div');
+      actions.className = 'msg-actions';
+
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'msg-action';
+      copyBtn.type = 'button';
+      copyBtn.innerHTML = '⎘ Kopyala';
+      copyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(text).then(() => {
+          copyBtn.classList.add('copied');
+          copyBtn.innerHTML = '✓ Kopyalandı';
+          showToast('Panoya kopyalandı', 'success');
+          setTimeout(() => { copyBtn.classList.remove('copied'); copyBtn.innerHTML = '⎘ Kopyala'; }, 1800);
+        });
+      });
+      actions.appendChild(copyBtn);
+
+      if(!isUser){
+        const retryBtn = document.createElement('button');
+        retryBtn.className = 'msg-action';
+        retryBtn.type = 'button';
+        retryBtn.innerHTML = '↻ Yenile';
+        retryBtn.addEventListener('click', () => {
+          const convo = getActiveConversation(); if(!convo) return;
+          const lastUser = [...(convo.messages||[])].reverse().find(m => m.role === 'user');
+          if(lastUser){ document.getElementById('input').value = lastUser.text; sendMessage(); }
+        });
+        actions.appendChild(retryBtn);
+      }
+
+      wrap.appendChild(bubble);
+      wrap.appendChild(ts);
+      wrap.appendChild(actions);
+
+      // Example cards: extracted examples rendered below the assistant card
+      if(!isUser){
+        if(examples.length){
+          const cardsWrap = document.createElement('div');
+          cardsWrap.className = 'example-cards';
+          const label = document.createElement('div');
+          label.className = 'example-cards-label';
+          label.textContent = 'Örnek' + (examples.length > 1 ? 'ler' : '');
+          cardsWrap.appendChild(label);
+          examples.forEach(ex => {
+            const card = document.createElement('button');
+            card.className = 'example-card';
+            card.type = 'button';
+            card.textContent = ex;
+            card.title = 'Tıklayarak kullan';
+            card.addEventListener('click', () => {
+              document.getElementById('input').value = ex;
+              document.getElementById('input').focus();
+            });
+            cardsWrap.appendChild(card);
+          });
+          wrap.appendChild(cardsWrap);
+        }
+      }
+
+      if(isUser){ row.appendChild(wrap); row.appendChild(avatar); }
+      else { row.appendChild(avatar); row.appendChild(wrap); }
+      chat.appendChild(row);
+    }
+    function addMessage(text, role){
+      const convo = getActiveConversation(); if(!convo) return;
+      if(role === 'user'){ document.getElementById('welcomeScreen')?.remove(); document.getElementById('suggestionRow')?.remove(); }
+      const mid = convo.id+'_'+convo.messages.length;
+      convo.messages.push({ role, text, mid }); convo.updatedAt = nowMs();
+      if((!convo.title || convo.title==='Yeni Sohbet') && role==='user')
+        convo.title = text.replace(/\s+/g,' ').slice(0,32) || 'Yeni Sohbet';
+      if(role === 'assistant'){
+        const ideaNameMatch = text.match(/\*{1,2}Fikrin\s+Ad[ıi]\*{1,2}\s*[:\-]?\s*(.+)/i);
+        if(ideaNameMatch){
+          const ideaName = ideaNameMatch[1].replace(/\*+/g,'').trim().slice(0,60);
+          if(ideaName) convo.title = ideaName;
+        }
+      }
+      saveState(); addMessageToDom(text, role, mid); scrollToBottom(); renderConversationList();
+    }
+
+    // ===== Actions =====
+    function createConversation(){
+      // Zaten boş (kullanıcı mesajı olmayan) bir sohbet varsa onu aç, yenisi açma
+      const existing = conversations.find(c => String(c.id||'').startsWith('c_') && !c.messages?.some(m => m.role === 'user'));
+      if(existing){
+        activeConversationId = existing.id;
+        saveState(); renderConversationList(); renderChat(); input.focus();
+        return;
+      }
+      const id = uid(), now = nowMs();
+      const convo = { id, title:'Yeni Sohbet', createdAt:now, updatedAt:now, messages:[{ role:'assistant', text:WELCOME_MESSAGE, mid:id+'_0' }] };
+      conversations.unshift(convo); activeConversationId = id;
+      saveState(); renderConversationList(); renderChat(); input.focus();
+    }
+    function renameConversation(convoId){
+      const c = conversations.find(x => x.id===convoId); if(!c) return;
+      const next = prompt('Sohbet başlığı:', c.title||'');
+      if(next && next.trim()){ c.title = next.trim().slice(0,80); c.updatedAt = nowMs(); saveState(); renderConversationList(); }
+    }
+    function deleteConversation(convoId){
+      const c = conversations.find(x => x.id===convoId); if(!c) return;
+      if(!confirm('Bu sohbet silinsin mi?')) return;
+      conversations = conversations.filter(x => x.id!==convoId);
+      if(activeConversationId === convoId) activeConversationId = conversations[0]?.id || null;
+      saveState(); ensureActiveExists(); renderConversationList(); renderChat();
+    }
+
+    function makeTurnFromPair(userQ, botA){
+      return { inputs:{ question:userQ }, outputs:{ answer:botA, llm_output:{ content:botA, role:'assistant', refusal:null, annotations:[], audio:null, function_call:null, tool_calls:null } } };
+    }
+    function buildPromptflowHistory(messages){
+      const turns = []; let pendingUser = null;
+      (messages||[]).forEach(m => {
+        const role = m.role==='assistant' ? 'assistant' : (m.role==='user' ? 'user' : '');
+        const text = (m.text||'').toString();
+        if(!role || !text) return;
+        if(role==='user'){ pendingUser = text; return; }
+        if(role==='assistant' && pendingUser!=null){ turns.push(makeTurnFromPair(pendingUser, text)); pendingUser = null; }
+      });
+      return turns;
+    }
+
+    async function callBot(userText, convo){
+      const historyTurns = buildPromptflowHistory(convo.messages||[]);
+      const threadId = convo.threadId || (String(convo.id||'').startsWith('c_') ? null : convo.id);
+      const res = await fetch(SR_CHAT_URL, {
+        method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include',
+        body:JSON.stringify({ question:userText, thread_id:threadId, chat_history:historyTurns })
+      });
+      if(!res.ok){ const t = await res.text().catch(()=>res.statusText); throw new Error('Servis hatası ('+res.status+'): '+(t||res.statusText)); }
+      const json = await res.json();
+      if(json && json.ok===false) throw new Error(json.error || json.message || 'İşlem başarısız.');
+      const answer = (json && typeof json.answer==='string') ? json.answer : '';
+      const nextThreadId = json && (json.thread_id || json.threadId);
+      if(answer.trim()) return { answer, threadId: nextThreadId||threadId };
+      throw new Error('Cevap beklenen formatta değil: ' + JSON.stringify(json).slice(0,500));
+    }
+
+    async function sendMessage(){
+      const text = input.value.trim(); if(!text) return;
+      const convo = getActiveConversation(); if(!convo) return;
+      addMessage(text, 'user'); input.value = '';
+      sendBtn.disabled = true;
+      showTyping();
+      try{
+        const res = await callBot(text, convo);
+        hideTyping();
+        const reply = res?.answer || 'Yanıt alınamadı.';
+        if(res?.threadId){
+          convo.threadId = res.threadId;
+          if(String(convo.id||'').startsWith('c_') && convo.id !== res.threadId){
+            convo.id = res.threadId; activeConversationId = convo.id;
+            convo.messages.forEach((m,idx) => { m.mid = convo.id+'_'+idx; });
+          }
+          saveState();
+        }
+        addMessage(reply, 'assistant');
+        // Başarılı oluşturma mesajı → feedback modal
+        if(reply.includes('Fikriniz başarıyla oluşturulmuştur') || reply.includes('Fikriniz başarıyla oluşturulmuştur')){
+          setTimeout(() => openFeedbackModal('chat'), 800);
+        }
+      }catch(err){
+        hideTyping();
+        addMessage('Bir hata oluştu: ' + (err?.message || String(err||'Bilinmeyen hata')), 'assistant');
+      }finally{
+        sendBtn.disabled = false; input.focus();
+      }
+    }
+
+    // ===== Context Menu =====
+    function openContextMenu(x, y, convoId){
+      ctxTargetId = convoId;
+      ctxMenu.style.left = Math.min(x, window.innerWidth-200)+'px';
+      ctxMenu.style.top = Math.min(y, window.innerHeight-120)+'px';
+      ctxMenu.classList.add('open'); ctxMenu.setAttribute('aria-hidden','false');
+    }
+    function closeContextMenu(){ ctxTargetId=null; ctxMenu.classList.remove('open'); ctxMenu.setAttribute('aria-hidden','true'); }
+
+    // ===== Search =====
+    function openSearch(){
+      searchOverlay.classList.add('open'); searchOverlay.setAttribute('aria-hidden','false');
+      searchInput.value = ''; lastSearch = ''; renderSearchResults([]);
+      setTimeout(() => searchInput.focus(), 0);
+    }
+    function closeSearch(){ searchOverlay.classList.remove('open'); searchOverlay.setAttribute('aria-hidden','true'); }
+
+    function renderSearchResults(results){
+      searchResults.innerHTML = '';
+      if(!results.length){
+        const empty = document.createElement('div'); empty.className = 'sr-empty';
+        empty.textContent = searchInput.value.trim() ? 'Sonuç bulunamadı' : 'Yazmaya başlayın…';
+        searchResults.appendChild(empty); return;
+      }
+      results.slice(0,80).forEach(r => {
+        const btn = document.createElement('button'); btn.className = 'sr-item'; btn.type = 'button';
+        const title = document.createElement('div'); title.className = 'sr-title'; title.textContent = r.convoTitle;
+        const snip = document.createElement('div'); snip.className = 'sr-snippet'; snip.textContent = r.snippet;
+        btn.appendChild(title); btn.appendChild(snip);
+        btn.addEventListener('click', () => {
+          closeSearch(); activeConversationId = r.convoId; saveState(); renderConversationList(); renderChat();
+          setTimeout(() => {
+            const node = chat.querySelector('[data-mid="'+r.mid+'"]');
+            if(node){ node.scrollIntoView({ behavior:'smooth', block:'center' }); }
+          }, 0);
+        });
+        searchResults.appendChild(btn);
+      });
+    }
+
+    function performSearch(q){
+      const query = q.trim().toLowerCase(); if(!query){ renderSearchResults([]); return; }
+      const hits = [];
+      conversations.forEach(c => {
+        (c.messages||[]).forEach((m,idx) => {
+          if((m.text||'').toLowerCase().includes(query)){
+            hits.push({ convoId:c.id, convoTitle:c.title||'Yeni Sohbet', mid:m.mid||(c.id+'_'+idx), snippet:(m.text||'').replace(/\s+/g,' ').slice(0,120) });
+          }
+        });
+      });
+      renderSearchResults(hits);
+    }
+
+    // ===== Wire up =====
+    btnNew.addEventListener('click', createConversation);
+    btnSearch.addEventListener('click', openSearch);
+    sendBtn.addEventListener('click', sendMessage);
+
+    // ===== Scroll-to-bottom FAB =====
+    const scrollFab = document.getElementById('scrollFab');
+    if(chatWrap && scrollFab){
+      chatWrap.addEventListener('scroll', () => {
+        const nearBottom = chatWrap.scrollHeight - chatWrap.scrollTop - chatWrap.clientHeight < 120;
+        scrollFab.classList.toggle('visible', !nearBottom);
+      });
+      scrollFab.addEventListener('click', () => {
+        chatWrap.scrollTo({ top: chatWrap.scrollHeight, behavior:'smooth' });
+      });
+    }
+
+    // ===== Code block copy buttons (event delegation) =====
+    document.getElementById('chat').addEventListener('click', (e) => {
+      const btn = e.target.closest('.pre-copy');
+      if(!btn) return;
+      const codeId = btn.dataset.codeId;
+      const codeEl = document.getElementById(codeId);
+      if(!codeEl) return;
+      navigator.clipboard.writeText(codeEl.textContent).then(() => {
+        btn.textContent = '✓ Kopyalandı'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Kopyala'; btn.classList.remove('copied'); }, 1800);
+      });
+    });
+    ctxRename.addEventListener('click', () => { if(ctxTargetId) renameConversation(ctxTargetId); closeContextMenu(); });
+    ctxDelete.addEventListener('click', () => { if(ctxTargetId) deleteConversation(ctxTargetId); closeContextMenu(); });
+    window.addEventListener('click', (e) => { if(ctxMenu.classList.contains('open') && !ctxMenu.contains(e.target)) closeContextMenu(); });
+    searchOverlay.addEventListener('click', (e) => { if(e.target === searchOverlay) closeSearch(); });
+    searchClose.addEventListener('click', closeSearch);
+    callsOverlay.addEventListener('click', closeCallsPanel);
+    callsClose.addEventListener('click', closeCallsPanel);
+    const callsSearchEl = document.getElementById('callsSearch');
+    if(callsSearchEl){
+      callsSearchEl.addEventListener('input', () => _applyCallsFilter());
+    }
+    matureOverlay.addEventListener('click', closeMatureModal);
+    matureClose.addEventListener('click', closeMatureModal);
+    if(btnPreview) btnPreview.addEventListener('click', openPreviewModal);
+    if(previewOverlay) previewOverlay.addEventListener('click', closePreviewModal);
+    if(previewClose) previewClose.addEventListener('click', closePreviewModal);
+    if(btnUpdate) btnUpdate.addEventListener('click', () => { openChatForThread(currentIdeaItem, currentAnswers, { mode:'update' }); closePreviewModal(); });
+    if(matureBtnUpdate) matureBtnUpdate.addEventListener('click', () => { currentAnswers = collectAnswers(); openChatForThread(currentIdeaItem, currentAnswers, { mode:'update' }); });
+    if(btnBack) btnBack.addEventListener('click', () => { closePreviewModal(); openMatureModal(currentIdeaItem); });
+    if(btnApprove) btnApprove.addEventListener('click', approveIdea);
+
+    const q5Select = document.getElementById('q5Select');
+    const q5Detail = document.getElementById('q5Detail');
+    const q3Select = document.getElementById('q3Select');
+    const q3Detail = document.getElementById('q3Detail');
+    const q2Select = document.getElementById('q2Select');
+    const q2Detail = document.getElementById('q2Detail');
+    const q2Warn = document.getElementById('q2Warn');
+    const q10Select = document.getElementById('q10Select');
+    const q10Detail = document.getElementById('q10Detail');
+    const q8Select = document.getElementById('q8Select');
+    const q8Attachment = document.getElementById('q8Attachment');
+
+    function bindYesNoDetail(selectEl, detailEl){
+      if(!selectEl || !detailEl) return;
+      const sync = () => {
+        const isYes = isAffirmative(selectEl.value);
+        detailEl.classList.toggle('open', isYes);
+        if(!isYes && detailEl.type === 'file') detailEl.value = '';
+      };
+      selectEl.addEventListener('change', sync); sync();
+    }
+
+    function syncYesNoDetails(){
+      const q5Attachment = document.getElementById('q5Attachment');
+      if(q5Select && q5Detail && q5Attachment){
+        const syncQ5 = () => {
+          const isVar = q5Select.value === 'Var';
+          q5Detail.classList.toggle('open', isVar); q5Attachment.classList.toggle('open', isVar);
+          if(!isVar){ q5Detail.value=''; q5Attachment.value=''; }
+        };
+        q5Select.addEventListener('change', syncQ5); syncQ5();
+      }
+      bindYesNoDetail(q3Select, q3Detail);
+      bindYesNoDetail(q2Select, q2Detail);
+      bindYesNoDetail(q8Select, q8Attachment);
+      bindYesNoDetail(q10Select, q10Detail);
+    }
+    syncYesNoDetails();
+    window.syncYesNoDetails = syncYesNoDetails;
+    if(q2Select && q2Warn){ q2Select.addEventListener('change', updateNpsWarning); updateNpsWarning(); }
+
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value; if(q === lastSearch) return; lastSearch = q; performSearch(q);
+    });
+    input.addEventListener('keydown', (e) => { if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); } });
+    window.addEventListener('keydown', (e) => {
+      if(e.key==='Escape'){
+        if(ctxMenu.classList.contains('open')) closeContextMenu();
+        if(searchOverlay.classList.contains('open')) closeSearch();
+        if(callsPanel.classList.contains('open')) closeCallsPanel();
+        if(matureModal.classList.contains('open')) closeMatureModal();
+        if(previewModal.classList.contains('open')) closePreviewModal();
+      }
+    });
+
+    // ===== Multi-select + opinions (Paydaşlar) =====
+    (function initStakeholdersMultiSelect(){
+      const msControl = document.getElementById('msControl');
+      const msInput = document.getElementById('msInput');
+      const msCaret = document.getElementById('msCaret');
+      const msDropdown = document.getElementById('msDropdown');
+      const msChips = document.getElementById('msChips');
+      const hidden = document.getElementById('stakeholdersValue');
+      const opinionsWrap = document.getElementById('stakeholderOpinions');
+      const opinionsHidden = document.getElementById('stakeholderOpinionsValue');
+      if(!msControl || !msInput || !msCaret || !msDropdown || !msChips || !hidden) return;
+
+      let STAKEHOLDERS = [], isLoadingStakeholders = false;
+      const selected = new Set();
+      const opinions = {};
+
+      function openDropdown(){ msDropdown.classList.add('open'); }
+      function closeDropdown(){ msDropdown.classList.remove('open'); }
+      function toggleDropdown(){ msDropdown.classList.toggle('open'); }
+      function syncHidden(){ hidden.value = Array.from(selected).join(", "); }
+      function syncOpinionsHidden(){
+        if(!opinionsHidden) return;
+        const payload = {};
+        Array.from(selected).forEach(name => { payload[name] = opinions[name] || ""; });
+        opinionsHidden.value = JSON.stringify(payload);
+      }
+
+      function renderChips(){
+        msChips.innerHTML = "";
+        Array.from(selected).forEach(name => {
+          const chip = document.createElement("span"); chip.className = "ms-chip";
+          chip.innerHTML = '<span>'+name+'</span><button type="button" aria-label="'+name+' kaldır">×</button>';
+          chip.querySelector("button").addEventListener("click", (e) => {
+            e.stopPropagation(); selected.delete(name); delete opinions[name]; render();
+          });
+          msChips.appendChild(chip);
+        });
+      }
+
+      function renderDropdown(filterText=""){
+        const q = filterText.trim().toLowerCase();
+        const items = STAKEHOLDERS.filter(n => n.toLowerCase().includes(q)).sort((a,b) => a.localeCompare(b,"tr"));
+        msDropdown.innerHTML = "";
+        if(isLoadingStakeholders){ const l = document.createElement("div"); l.className="ms-empty"; l.textContent="Yükleniyor..."; msDropdown.appendChild(l); return; }
+        if(items.length===0){ const e = document.createElement("div"); e.className="ms-empty"; e.textContent="Birim bulunamadı."; msDropdown.appendChild(e); return; }
+        items.forEach(name => {
+          const row = document.createElement("div"); row.className="ms-item"; row.setAttribute("role","option"); row.setAttribute("aria-selected", selected.has(name)?"true":"false");
+          const checked = selected.has(name) ? "checked" : "";
+          row.innerHTML = '<input type="checkbox" '+checked+' aria-label="'+name+'"><div class="ms-name">'+name+'</div>';
+          row.addEventListener("click", (e) => {
+            if(selected.has(name)){ selected.delete(name); delete opinions[name]; } else { selected.add(name); if(typeof opinions[name]!=="string") opinions[name]=""; }
+            msInput.focus(); render(); openDropdown();
+          });
+          msDropdown.appendChild(row);
+        });
+      }
+
+      function renderOpinions(){
+        if(!opinionsWrap) return;
+        opinionsWrap.innerHTML = "";
+        if(selected.size===0){ syncOpinionsHidden(); return; }
+        Array.from(selected).sort((a,b) => a.localeCompare(b,"tr")).forEach(name => {
+          const card = document.createElement("div"); card.className="op-card";
+          const head = document.createElement("div"); head.className="op-head";
+          const title = document.createElement("div"); title.className="op-title"; title.textContent = name + " görüşü";
+          const req = document.createElement("div"); req.className="op-required"; req.textContent = "Zorunlu";
+          head.appendChild(title); head.appendChild(req);
+          const ta = document.createElement("textarea"); ta.className="op-text"; ta.rows=3;
+          ta.placeholder = name + " ile yapılan değerlendirmeyi yazın…"; ta.value = opinions[name]||"";
+          ta.addEventListener("input", () => { opinions[name] = ta.value||""; syncOpinionsHidden(); });
+          card.appendChild(head); card.appendChild(ta); opinionsWrap.appendChild(card);
+        });
+        syncOpinionsHidden();
+      }
+
+      function render(){ renderChips(); renderDropdown(msInput.value); syncHidden(); renderOpinions(); updateNpsWarning(); }
+      function clearSelection(){ selected.clear(); Object.keys(opinions).forEach(k => delete opinions[k]); if(msInput) msInput.value=''; closeDropdown(); render(); }
+      function restoreSelection(stakeholdersValue, opinionsJson){
+        selected.clear(); Object.keys(opinions).forEach(k => delete opinions[k]);
+        (stakeholdersValue||'').split(',').map(s=>s.trim()).filter(Boolean).forEach(n => selected.add(n));
+        let op = {}; try{ op = opinionsJson ? JSON.parse(opinionsJson) : {}; }catch(e){ op={}; }
+        Object.keys(op).forEach(k => { opinions[k] = op[k]||""; });
+        render();
+      }
+
+      async function loadStakeholders(){
+        if(isLoadingStakeholders) return;
+        isLoadingStakeholders = true; renderDropdown(msInput.value);
+        try{
+          const res = await fetch(SR_UNITS_URL, { credentials:'include' });
+          const json = await res.json().catch(() => null);
+          if(!res.ok || (json && json.ok === false)) throw new Error('Liste alınamadı');
+          let items = [];
+          if(Array.isArray(json)) items=json; else if(Array.isArray(json.items)) items=json.items; else if(Array.isArray(json.data)) items=json.data;
+          STAKEHOLDERS = items.map(it => (it.name||it.title||it.unit||it).toString()).filter(Boolean);
+        }catch(e){ STAKEHOLDERS=[]; }finally{ isLoadingStakeholders=false; renderDropdown(msInput.value); }
+      }
+
+      msControl.addEventListener("click", () => { msInput.focus(); openDropdown(); });
+      msCaret.addEventListener("click", (e) => { e.stopPropagation(); toggleDropdown(); msInput.focus(); });
+      msInput.addEventListener("input", () => { openDropdown(); renderDropdown(msInput.value); });
+      msInput.addEventListener("keydown", (e) => { if(e.key==="Escape") closeDropdown(); });
+      document.addEventListener("click", (e) => { const wrap = document.getElementById("qStakeholders"); if(wrap && !wrap.contains(e.target)) closeDropdown(); });
+
+      render(); loadStakeholders();
+      window.resetStakeholdersSelection = clearSelection;
+      window.restoreStakeholdersSelection = restoreSelection;
+      window.getStakeholdersState = function(){
+        return { stakeholdersValue: Array.from(selected).join(", "), stakeholderOpinionsValue: JSON.stringify(opinions) };
+      };
+    })();
+
+    // ===== Init =====
+    async function loadCurrentUser(){
+      try {
+        const baseOrigin = (location.protocol === 'file:' || location.hostname === 'localhost')
+          ? 'https://atlastest.fibabanka.local'
+          : location.origin;
+        const res = await fetch(baseOrigin + '/jira/rest/api/2/myself', { credentials:'include' });
+        if(!res.ok) return;
+        const u = await res.json();
+        const nameParts = (u.displayName || u.name || '').trim().split(/\s+/);
+        const initials = nameParts.length >= 2
+          ? (nameParts[0][0] + nameParts[nameParts.length-1][0]).toUpperCase()
+          : (nameParts[0]||'?')[0].toUpperCase();
+        const avatarUrl = u.avatarUrls?.['32x32'] || u.avatarUrls?.['48x48'] || null;
+        _jiraUser = { displayName: u.displayName || u.name, emailAddress: u.emailAddress || '', initials, avatarUrl };
+        renderSbUser();
+      } catch(e){ /* sessizce geç */ }
+    }
+
+    function renderSbUser(){
+      const el = document.getElementById('sbUserArea');
+      if(!el || !_jiraUser) return;
+      const avatarInner = _jiraUser.avatarUrl
+        ? `<img src="${_jiraUser.avatarUrl}" alt="" />`
+        : _jiraUser.initials;
+      el.innerHTML = `
+        <div class="sb-user">
+          <div class="sb-user-avatar">${avatarInner}</div>
+          <div class="sb-user-info">
+            <div class="sb-user-name">${_jiraUser.displayName}</div>
+            <div class="sb-user-email">${_jiraUser.emailAddress}</div>
+          </div>
+        </div>`;
+    }
+
+    function renderBrand(){
+      const el = document.getElementById('sbBrand');
+      if(!el) return;
+      el.innerHTML = `<div class="brand-with-icon"><img src="${FILOZOF_AVATAR}" alt="" /><strong>Filozof</strong></div>`;
+    }
+
+    function getUserInitials(){
+      return _jiraUser ? _jiraUser.initials : '?';
+    }
+
+    (async function init(){
+      const restored = loadState();
+      if(!restored || conversations.length === 0){ conversations=[]; activeConversationId=null; createConversation(); }
+      else ensureActiveExists();
+      renderBrand();
+      renderConversationList(); renderChat();
+      await Promise.all([ loadThreadsFromBackend(), loadCurrentUser() ]);
+      if(OPEN_NEW_ON_LOAD) openDraftConversation();
+    })();
+  </script>
+</body>
+</html>
