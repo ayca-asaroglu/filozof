@@ -19,6 +19,7 @@ String clipStr(String s, int maxLen) {
 }
 
 aiIdeaChat(httpMethod: "POST") { MultivaluedMap queryParams, String body ->
+  try {
 
     def user = ComponentAccessor.jiraAuthenticationContext.loggedInUser
     if (!user) {
@@ -227,6 +228,13 @@ ${ideaArgs.beklenen_fayda}
     ]))
     .type("application/json;charset=UTF-8")
     .build()
+
+  } catch (Exception e) {
+    return Response.status(500)
+        .entity(JsonOutput.toJson([error: "Sunucu hatası: ${e.message}"]))
+        .type("application/json;charset=UTF-8")
+        .build()
+  }
 }
 
 aiIdeaChatbotPage(httpMethod: "GET") { MultivaluedMap queryParams ->
