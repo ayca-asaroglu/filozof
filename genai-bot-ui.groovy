@@ -489,12 +489,13 @@ aiIdeaChatbotPage(httpMethod: "GET") { MultivaluedMap queryParams ->
     let chatMessages = JSON.parse(localStorage.getItem(STORAGE_KEY_MESSAGES) || "[]");
     let lastRole     = null;
 
-    // Sayfa açılışında geçmiş mesajları göster
+    // Sayfa açılışında geçmiş mesajları göster, sonra textarea'ya focus
     if (chatMessages.length > 0) {
       chatMessages.forEach(m => appendBubble(m.content, m.role === "user" ? "user" : "assistant"));
     } else {
       appendBubble(WELCOME_MSG, "assistant");
     }
+    textarea.focus();
 
     // Yeni Fikir — localStorage temizle, sayfayı sıfırla
     btnNew.addEventListener("click", () => {
@@ -671,10 +672,11 @@ aiIdeaChatbotPage(httpMethod: "GET") { MultivaluedMap queryParams ->
 
     function setLoading(on) {
       sendBtn.disabled = on;
+      textarea.style.opacity = on ? "0.6" : "1";
     }
 
     function scrollToBottom() {
-      chatWrap.scrollTop = chatWrap.scrollHeight;
+      requestAnimationFrame(() => { chatWrap.scrollTop = chatWrap.scrollHeight; });
     }
   </script>
 </body>
