@@ -403,6 +403,51 @@ aiIdeaChatbotPage(httpMethod: "GET") { MultivaluedMap queryParams ->
       30%           { transform: translateY(-5px); opacity: 1;  }
     }
 
+    /* ===== Welcome screen ===== */
+    .welcome {
+      flex: 1;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 40px 24px;
+      text-align: center;
+      gap: 8px;
+    }
+    .welcome-icon {
+      font-size: 40px; line-height: 1; margin-bottom: 8px;
+    }
+    .welcome-title {
+      font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 6px;
+    }
+    .welcome-sub {
+      font-size: 15px; color: var(--text-muted); max-width: 480px; line-height: 1.6;
+      margin-bottom: 28px;
+    }
+    .example-cards {
+      display: flex; flex-direction: column; gap: 10px;
+      width: 100%; max-width: 520px;
+    }
+    .example-cards-label {
+      font-size: 11px; font-weight: 700; color: var(--text-subtle);
+      text-transform: uppercase; letter-spacing: 0.5px;
+      margin-bottom: 2px; text-align: left;
+    }
+    .example-card {
+      padding: 12px 16px 12px 18px;
+      border: 1px solid #C7D8F5;
+      border-left: 3px solid var(--primary);
+      border-radius: 8px;
+      background: #F8FAFF;
+      font-size: 13.5px; color: #334155;
+      line-height: 1.5; text-align: left;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .example-card:hover {
+      background: #EEF2FB;
+      border-color: var(--primary);
+      box-shadow: 0 2px 8px rgba(47,93,169,0.12);
+    }
+
     /* ===== Composer ===== */
     .composer-wrap {
       padding: 10px 16px 14px;
@@ -457,7 +502,21 @@ aiIdeaChatbotPage(httpMethod: "GET") { MultivaluedMap queryParams ->
     </div>
 
     <div class="chat-wrap" id="chatWrap">
-      <div class="chat" id="chat"></div>
+      <div id="welcomeScreen" class="welcome">
+        <div class="welcome-icon">💡</div>
+        <div class="welcome-title">AI Fikir Asistanı</div>
+        <div class="welcome-sub">
+          Geliştirmek istediğin AI fikrini anlat, birlikte şekillendirelim.<br>
+          Asistan sana 5 kısa soru soracak ve fikrinin özetini oluşturacak.
+        </div>
+        <div class="example-cards">
+          <div class="example-cards-label">Örnek fikirler</div>
+          <div class="example-card" onclick="useExample(this)">Müşteri hizmetleri süreçlerini otomatikleştiren bir chatbot</div>
+          <div class="example-card" onclick="useExample(this)">Sözleşmeleri analiz edip risk noktalarını tespit eden AI aracı</div>
+          <div class="example-card" onclick="useExample(this)">Çalışan onboarding sürecini kişiselleştiren asistan</div>
+        </div>
+      </div>
+      <div class="chat" id="chat" style="display:none"></div>
     </div>
 
     <div class="composer-wrap">
@@ -488,14 +547,28 @@ aiIdeaChatbotPage(httpMethod: "GET") { MultivaluedMap queryParams ->
     let threadId     = localStorage.getItem(STORAGE_KEY_THREAD) || null;
     let chatMessages = JSON.parse(localStorage.getItem(STORAGE_KEY_MESSAGES) || "[]");
     let lastRole     = null;
+    let chatStarted  = false;
 
-    // Sayfa açılışında geçmiş mesajları göster, sonra textarea'ya focus
+    // Geçmiş varsa chat moduna geç, yoksa welcome screen göster
     if (chatMessages.length > 0) {
+      showChat();
       chatMessages.forEach(m => appendBubble(m.content, m.role === "user" ? "user" : "assistant"));
-    } else {
-      appendBubble(WELCOME_MSG, "assistant");
     }
     textarea.focus();
+
+    function showChat() {
+      if (chatStarted) return;
+      chatStarted = true;
+      document.getElementById("welcomeScreen").style.display = "none";
+      document.getElementById("chat").style.display = "flex";
+    }
+
+    function useExample(el) {
+      textarea.value = el.textContent.trim();
+      textarea.style.height = "auto";
+      textarea.style.height = Math.min(textarea.scrollHeight, 160) + "px";
+      textarea.focus();
+    }
 
     // Yeni Fikir — localStorage temizle, sayfayı sıfırla
     btnNew.addEventListener("click", () => {
@@ -520,6 +593,7 @@ aiIdeaChatbotPage(httpMethod: "GET") { MultivaluedMap queryParams ->
       const text = textarea.value.trim();
       if (!text || sendBtn.disabled) return;
 
+      showChat();
       appendBubble(text, "user");
       textarea.value = "";
       textarea.style.height = "auto";
@@ -569,7 +643,7 @@ aiIdeaChatbotPage(httpMethod: "GET") { MultivaluedMap queryParams ->
           chatMessages.push({ role: "assistant", content: data.summary });
           localStorage.removeItem(STORAGE_KEY_THREAD);
           localStorage.removeItem(STORAGE_KEY_MESSAGES);
-          appendBubble("Fikir özetiniz kaydedildi. Yeni bir fikir girmek için \"+ Yeni Fikir\" butonunu kullanabilirsiniz.", "assistant");
+          appendBubble('Fikir özetiniz kaydedildi. Yeni bir fikir girmek için "+ Yeni Fikir" butonunu kullanabilirsiniz.', "assistant");
           textarea.disabled  = true;
           sendBtn.disabled   = true;
         } else {
