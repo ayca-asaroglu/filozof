@@ -1,4 +1,4 @@
-package Endpoint.idea
+package Filozof.chat
 
 import com.onresolve.scriptrunner.runner.rest.common.CustomEndpointDelegate
 import com.onresolve.scriptrunner.db.DatabaseUtil
@@ -15,6 +15,7 @@ import java.util.UUID
 @BaseScript CustomEndpointDelegate delegate
 
 final String DB_POOL = "local"
+final String CATEGORY = "genai"
 
 /* -------------------------
    Helpers
@@ -22,7 +23,11 @@ final String DB_POOL = "local"
 int qpInt(MultivaluedMap qp, String key, int defVal, int minVal, int maxVal) {
   def raw = qp.getFirst(key)
   int v
-  try { v = (raw ?: defVal.toString()) as int } catch (ignored) { v = defVal }
+  try {
+    v = (raw ?: defVal.toString()) as int
+  } catch (ignored) {
+    v = defVal
+  }
   Math.max(minVal, Math.min(v, maxVal))
 }
 
@@ -39,7 +44,7 @@ String clip(String s, int maxLen) {
    ========================================================= */
 fibarprChatThreads(httpMethod: "GET") { MultivaluedMap qp, String body ->
   def user = ComponentAccessor.jiraAuthenticationContext.loggedInUser
-  if (!user) return json(401, [ok:false])
+  if (!user) return json(401, [ok: false, error: "Unauthorized"])
 
   int offset = qpInt(qp, "offset", 0, 0, 1_000_000)
   int limit  = qpInt(qp, "limit", 20, 1, 100)
@@ -49,33 +54,40 @@ fibarprChatThreads(httpMethod: "GET") { MultivaluedMap qp, String body ->
     items = sql.rows("""
       SELECT 
         CAST(thread_id AS VARCHAR(36)) AS thread_id,
-        title, last_snippet, last_message_at, updated_at, message_count
+        category,
+        title,
+        last_snippet,
+        last_message_at,
+        updated_at,
+        message_count
       FROM dbo.fibarpr_chat_thread
-      WHERE user_key = ? AND is_deleted = 0
+      WHERE user_key = ? AND category = ? AND is_deleted = 0
       ORDER BY last_message_at DESC
       OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
-    """, [user.key, offset, limit])
+    """, [user.key, CATEGORY, offset, limit])
   }
 
-  json(200, [ok:true, items:items])
+  json(200, [ok: true, items: items])
 }
 
 /* =========================================================
    2) GET MESSAGES
    ========================================================= */
-fibarprChatMessages(httpMethod: "GET") {
-  MultivaluedMap qp, String body, HttpServletRequest req ->
+fibarprChatMessages(httpMethod: "GET") { MultivaluedMap qp, String body, HttpServletRequest req ->
 
   def user = ComponentAccessor.jiraAuthenticationContext.loggedInUser
-  if (!user) return json(401, [ok:false])
+  if (!user) return json(401, [ok: false, error: "Unauthorized"])
 
   def parts = (getAdditionalPath(req) ?: "").tokenize('/')
-  if (parts.size() < 2 || parts[1] != "messages")
-    return json(400, [ok:false])
+  if (parts.size() < 2 || parts[1] != "messages") {
+    return json(400, [ok: false, error: "Invalid path"])
+  }
 
   String threadId = parts[0]
-  try { UUID.fromString(threadId) } catch (ignored) {
-    return json(400, [ok:false, error:"Invalid threadId"])
+  try {
+    UUID.fromString(threadId)
+  } catch (ignored) {
+    return json(400, [ok: false, error: "Invalid threadId"])
   }
 
   int offset = qpInt(qp, "offset", 0, 0, 1_000_000)
@@ -84,81 +96,108 @@ fibarprChatMessages(httpMethod: "GET") {
   def allowed
   DatabaseUtil.withSql(DB_POOL) { sql ->
     allowed = sql.firstRow("""
-      SELECT 1 FROM dbo.fibarpr_chat_thread
-      WHERE thread_id = ? AND user_key = ? AND is_deleted = 0
-    """, [threadId, user.key])
+      SELECT 1
+      FROM dbo.fibarpr_chat_thread
+      WHERE thread_id = ? AND user_key = ? AND category = ? AND is_deleted = 0
+    """, [threadId, user.key, CATEGORY])
   }
-  if (!allowed) return json(404, [ok:false])
+
+  if (!allowed) return json(404, [ok: false, error: "Thread not found"])
 
   def items = []
   DatabaseUtil.withSql(DB_POOL) { sql ->
     items = sql.rows("""
-      SELECT id, role, content, created_at
+      SELECT
+        id,
+        category,
+        role,
+        content,
+        created_at
       FROM dbo.fibarpr_chat_message
-      WHERE thread_id = ?
+      WHERE thread_id = ? AND category = ?
       ORDER BY id DESC
       OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
-    """, [threadId, offset, limit])
+    """, [threadId, CATEGORY, offset, limit])
   }
 
-  json(200, [ok:true, items:items])
+  json(200, [ok: true, items: items])
 }
 
 /* =========================================================
    3) POST CHAT
    ========================================================= */
-fibarprChat(httpMethod: "POST") {
-  MultivaluedMap qp, String body ->
+fibarprChat(httpMethod: "POST") { MultivaluedMap qp, String body ->
 
   def user = ComponentAccessor.jiraAuthenticationContext.loggedInUser
-  if (!user) return json(401, [ok:false])
+  if (!user) return json(401, [ok: false, error: "Unauthorized"])
 
-  def payload = body ? new JsonSlurper().parseText(body) : [:]
+  def payload
+  try {
+    payload = body ? new JsonSlurper().parseText(body) : [:]
+  } catch (Exception e) {
+    return json(400, [ok: false, error: "Geçersiz JSON"])
+  }
+
   String question = payload?.question?.toString()?.trim()
-  if (!question) return json(400, [ok:false])
+  if (!question) return json(400, [ok: false, error: "question zorunlu"])
 
-  def threadId = payload?.thread_id
-log.warn(threadId)
-log.warn(threadId.getClass().toString())
-
+  def threadId = payload?.thread_id?.toString()?.trim()
   String answer = "Alındı: ${question}"
 
   DatabaseUtil.withSql(DB_POOL) { sql ->
     sql.connection.autoCommit = false
     try {
 
-     if (!threadId) {
-      log.warn("thread yok")
+      if (threadId) {
+        try {
+          UUID.fromString(threadId)
+        } catch (ignored) {
+          throw new IllegalArgumentException("Invalid threadId")
+        }
+
+        def existing = sql.firstRow("""
+          SELECT 1
+          FROM dbo.fibarpr_chat_thread
+          WHERE thread_id = ? AND user_key = ? AND category = ? AND is_deleted = 0
+        """, [threadId, user.key, CATEGORY])
+
+        if (!existing) {
+          throw new IllegalArgumentException("Thread not found")
+        }
+      }
+
+      if (!threadId) {
         def row = sql.firstRow("""
-          INSERT INTO dbo.fibarpr_chat_thread (user_key, title, last_snippet)
+          INSERT INTO dbo.fibarpr_chat_thread (user_key, category, title, last_snippet)
           OUTPUT CAST(inserted.thread_id AS VARCHAR(36)) AS thread_id
-          VALUES (?, ?, ?)
-        """, [user.key, clip(question,60), clip(question,300)])
-        threadId = (row.thread_id).toString()
-        log.warn("thread oluştu")
+          VALUES (?, ?, ?, ?)
+        """, [user.key, CATEGORY, clip(question, 60), clip(question, 300)])
+
+        threadId = row.thread_id.toString()
       }
 
       sql.execute("""
-        INSERT INTO dbo.fibarpr_chat_message (thread_id, role, content)
-        VALUES (?, 'user', ?)
-      """, [threadId, question])
+        INSERT INTO dbo.fibarpr_chat_message (thread_id, category, role, content)
+        VALUES (?, ?, 'user', ?)
+      """, [threadId, CATEGORY, question])
 
       sql.execute("""
-        INSERT INTO dbo.fibarpr_chat_message (thread_id, role, content)
-        VALUES (?, 'assistant', ?)
-      """, [threadId, answer])
+        INSERT INTO dbo.fibarpr_chat_message (thread_id, category, role, content)
+        VALUES (?, ?, 'assistant', ?)
+      """, [threadId, CATEGORY, answer])
 
       sql.execute("""
         UPDATE dbo.fibarpr_chat_thread
         SET message_count = message_count + 2,
             last_message_at = SYSUTCDATETIME(),
             updated_at = SYSUTCDATETIME(),
-            last_snippet = ?
+            last_snippet = ?,
+            category = ?
         WHERE thread_id = ?
-      """, [clip(answer,300), threadId])
+      """, [clip(answer, 300), CATEGORY, threadId])
 
       sql.connection.commit()
-    } catch (e) {
+    } catch (Exception e) {
       sql.connection.rollback()
       throw e
     } finally {
@@ -166,5 +205,5 @@ log.warn(threadId.getClass().toString())
     }
   }
 
-  json(200, [ok:true, thread_id:threadId, answer:answer])
+  json(200, [ok: true, thread_id: threadId, category: CATEGORY, answer: answer])
 }
